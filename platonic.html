@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<title>Platonic</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<script src='platonic.js'></script>
+<script>
+const Q=(el,func)=>func? document.querySelectorAll(el).forEach(func):document.querySelector(el);
+</script>
+<link rel=stylesheet href='common.css'>
+<style>
+menu {
+    display:flex;justify-content:space-around;flex-wrap:wrap;
+}
+menu li {
+    margin:1.5em 1em;
+    min-width:7em;
+}
+menu label {
+    font-size:1em;
+    border:.1rem solid;border-radius:9em;
+    position:relative;
+    padding:.2em .5em .2em 1.5em;
+    white-space:nowrap;
+}
+menu label::before {
+    content:attr(for);
+    font-size:2em;
+    position:absolute;right:calc(100% - .6em);top:50%;
+    transform:translate(0%,-50%);
+    border:.1rem solid;border-radius:9em;
+    width:1.5em;height:1.5em;line-height:1.5em;
+    background:white;
+}
+input[name=which]:checked+label {
+    background:turquoise;
+}
+input[type=range] {
+    width:60%;
+}
+menu~label {
+    display:block;
+    width:100%;
+    text-align:right;
+    padding:1em .5em;
+}
+menu~label::before {
+    content:attr(for);
+    margin-right:.5em;
+}
+menu~label::after {
+    content:'';
+    display:inline-block;width:3em;
+    text-align:left;
+    margin-left:.5em;
+}
+meun~label::before,input[type=range],menu~label::after {
+    vertical-align:middle;
+}
+label[value]::after {
+    content:attr(value);
+}
+hedron-p::after {
+    content:attr(circumradius);
+    position:absolute;top:0;
+    font-size:2em;
+}
+hedron-p {
+    position:relative;
+    display:inline-flex;
+    animation:spin 20s linear infinite;
+    transform-style:preserve-3d;
+}
+@keyframes spin {
+    from {transform:rotate3d(0,0,0,0deg);}
+    to {transform:rotateX(360deg) rotateY(720deg) rotateZ(1080deg);}
+}
+</style>
+
+<menu>
+    <li>
+        <input type=radio name=which id=12 checked>
+        <label for=12>Dodecahedron</label>
+    <li>
+        <input type=radio name=which id=20>
+        <label for=20>Icosahedron</label>
+    <li>
+        <input type=radio name=which id=8>
+        <label for=8>Octahedron</label>
+    <li>
+        <input type=radio name=which id=4>
+        <label for=4>Tetrahedron</label>
+</menu>
+<label for=stroke><input type=range min=0 max=.5 step=.01 id=stroke></label>
+<label for=diameter><input type=range min=5 max=20 step=.1 id=diameter></label>
+
+<hedron-p color='' stroke='.02' diameter='6.6em' face='12'></hedron-p>
+<hedron-p color='' stroke='.02' diameter='6.6em' face='20'></hedron-p>
+<hedron-p color='' stroke='.02' diameter='8.8em' face='8'></hedron-p>
+<hedron-p color='' stroke='.02' diameter='10.2em' face='4'></hedron-p>
+<script>
+Q('input[name=which]',input=>input.onchange=ev=>setRange(Q('input[name=which]:checked').id));
+const setRange=id=>{
+    let stroke=Q(`hedron-p[face="${id}"]`).getAttribute('stroke');
+    Q('#stroke').value=stroke;
+    Q('label[for=stroke]').setAttribute('value',stroke);
+    let diameter=Q(`hedron-p[face="${id}"]`).getAttribute('diameter').replace('em','');
+    Q('#diameter').value=diameter;
+    Q('label[for=diameter]').setAttribute('value',diameter);
+};
+setRange(12);
+Q('#stroke').onchange=ev=>{
+    ev.target.parentNode.setAttribute('value',ev.target.value);
+    Q(`hedron-p[face="${Q('input[name=which]:checked').id}"]`).setAttribute('stroke',ev.target.value);
+}
+Q('#diameter').onchange=ev=>{
+    ev.target.parentNode.setAttribute('value',ev.target.value);
+    Q(`hedron-p[face="${Q('input[name=which]:checked').id}"]`).setAttribute('diameter',ev.target.value+'em');
+}
+</script>
