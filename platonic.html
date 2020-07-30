@@ -9,111 +9,198 @@ const Q=(el,func)=>func? document.querySelectorAll(el).forEach(func):document.qu
 <link rel=stylesheet href='common.css'>
 <style>
 menu {
-    display:flex;justify-content:space-around;flex-wrap:wrap;
+    margin-top:2em;margin-bottom:1em;
 }
 menu li {
-    margin:1.5em 1em;
-    min-width:7em;
+    margin:0 2em 3em 4.5em;
+    display:inline-block;
+}
+menu label,menu label::before {
+    color:grey;
+    border:.1rem solid silver;
 }
 menu label {
     font-size:1em;
-    border:.1rem solid;border-radius:9em;
     position:relative;
-    padding:.2em .5em .2em 1.5em;
-    white-space:nowrap;
+    padding:.2em 0;
+    display:inline-block;width:8em;
+    border-bottom-right-radius:9em;border-top-right-radius:9em;
+    border-left:none;
 }
 menu label::before {
     content:attr(for);
-    font-size:2em;
-    position:absolute;right:calc(100% - .6em);top:50%;
+    font-size:1.8em;
+    position:absolute;right:calc(100% - .3rem);top:50%;
     transform:translate(0%,-50%);
-    border:.1rem solid;border-radius:9em;
-    width:1.5em;height:1.5em;line-height:1.5em;
-    background:white;
+    width:3rem;height:3rem;line-height:3rem;
+    border-radius:9em;
+}
+menu label::after {
+    content:attr(data-width);
+    color:grey;
+    position:absolute;right:.2em;top:115%;
 }
 input[name=which]:checked+label {
-    background:turquoise;
+    background:var(--theme-bg);
+    border-color:var(--theme);
+    color:black;
 }
-input[type=range] {
-    width:60%;
+input[name=which]:checked+label::before {
+    background:var(--theme);
+    border-color:var(--theme);
+    color:white;
 }
-menu~label {
+form {
+    display:grid;grid-template:3em / 4rem 4rem 1fr;gap:.5em;
+}
+form>* {
+    align-self:center;
+}
+form label:not([value]) {
+    color:grey;
+}
+#ring:checked~* figure::before,#ring:checked~* figure::after,#ring:checked~* figure {
+    border:.1em solid var(--theme);border-radius:99em;
+    content:'';
+}
+#spin:not(:checked)~* figure::before,#spin:not(:checked)~* figure::after,#spin:not(:checked)~* figure {
+    animation-play-state:paused;
+}
+form label[value] {
     display:block;
     width:100%;
     text-align:right;
-    padding:1em .5em;
 }
-menu~label::before {
+input[type=range] {
+    width:calc(100% - 7.5rem);
+    margin:0 .5rem;
+}
+label[for=Stroke] {
+    grid-area:1/3/2/4;
+}
+label[for=Diameter] {
+    grid-area:2/3/3/4;
+}
+label[value]::before {
     content:attr(for);
-    margin-right:.5em;
 }
-menu~label::after {
-    content:'';
-    display:inline-block;width:3em;
+label[value]::after {
+    display:inline-block;width:2.2em;
     text-align:left;
-    margin-left:.5em;
 }
-meun~label::before,input[type=range],menu~label::after {
+label[value]::before,input[type=range],label[value]::after {
     vertical-align:middle;
 }
 label[value]::after {
     content:attr(value);
 }
-hedron-p::after {
-    content:attr(circumradius);
-    position:absolute;top:0;
-    font-size:2em;
-}
-hedron-p {
-    position:relative;
+figure {
     display:inline-flex;
-    animation:spin 20s linear infinite;
     transform-style:preserve-3d;
+    animation:spin 20s linear infinite;
+    position:relative;
 }
 @keyframes spin {
-    from {transform:rotate3d(0,0,0,0deg);}
     to {transform:rotateX(360deg) rotateY(720deg) rotateZ(1080deg);}
+}
+figure::before,figure::after {
+    content:'';
+    position:absolute;left:0;top:0;
+    width:100%;height:100%;
+}
+figure::before {
+    animation:before-spin 10s linear infinite alternate;
+}
+figure::after {
+    animation:after-spin 10s linear infinite alternate;
+}
+@keyframes before-spin {
+    to {transform:rotate3d(var(--x),var(--y),var(--z),calc(1deg*var(--a)));}
+}
+@keyframes after-spin {
+    to {transform:rotate3d(var(--x),var(--y),var(--z),calc(-1deg*var(--a)));}
+}
+.toggle.single {
+    display:none;
+}
+#none:checked~* label[for=semi],
+#semi:checked~* label[for=full],
+#full:checked~* label[for=none] {
+    display:inline-flex;
 }
 </style>
 
 <menu>
     <li>
-        <input type=radio name=which id=12 checked>
-        <label for=12>Dodecahedron</label>
-    <li>
         <input type=radio name=which id=20>
         <label for=20>Icosahedron</label>
+    <li>
+        <input type=radio name=which id=12 checked>
+        <label for=12>Dodecahedron</label>
     <li>
         <input type=radio name=which id=8>
         <label for=8>Octahedron</label>
     <li>
+        <input type=radio name=which id=6>
+        <label for=6>Hexahedron</label>
+    <li>
         <input type=radio name=which id=4>
         <label for=4>Tetrahedron</label>
 </menu>
-<label for=stroke><input type=range min=0 max=.5 step=.01 id=stroke></label>
-<label for=diameter><input type=range min=5 max=20 step=.1 id=diameter></label>
+<input type=checkbox id=ring checked>
+<input type=checkbox id=spin checked>
+<input type=radio name=truncate id=none checked>
+<input type=radio name=truncate id=semi>
+<input type=radio name=truncate id=full>
 
-<hedron-p color='' stroke='.02' diameter='6.6em' face='12'></hedron-p>
-<hedron-p color='' stroke='.02' diameter='6.6em' face='20'></hedron-p>
-<hedron-p color='' stroke='.02' diameter='8.8em' face='8'></hedron-p>
-<hedron-p color='' stroke='.02' diameter='10.2em' face='4'></hedron-p>
+<form>
+    <label for=ring class=toggle data-icon=🪐 title='Circumsphere rings'></label>
+    <label for=spin class=toggle data-icon=⏯ title='Spin animation'></label>
+    <label for=none class='toggle single' data-icon=🔪 style='justify-content:flex-end'></label>
+    <label for=semi class='toggle single' data-icon=🔪></label>
+    <label for=full class='toggle single' data-icon=🔪 style='justify-content:center'></label>
+    <label class=toggle data-icon=🎨 title='Color' onclick="Q('hedron-p',solid=>solid.setAttribute('color',''))"></label>
+    <label for=Stroke><input type=range min=0 max=.5 step=.01 id=Stroke></label>
+    <label for=Diameter><input type=range min=5 max=20 step=.1 id=Diameter></label>
+</form>
+<section>
+    <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p></figure>
+    <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p></figure>
+    <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p></figure>
+    <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p></figure>
+    <figure><hedron-p color='140' stroke='0.02' diameter='10.2' face='4'></hedron-p></figure>
+</section>
+
 <script>
-Q('input[name=which]',input=>input.onchange=ev=>setRange(Q('input[name=which]:checked').id));
-const setRange=id=>{
-    let stroke=Q(`hedron-p[face="${id}"]`).getAttribute('stroke');
-    Q('#stroke').value=stroke;
-    Q('label[for=stroke]').setAttribute('value',stroke);
-    let diameter=Q(`hedron-p[face="${id}"]`).getAttribute('diameter').replace('em','');
-    Q('#diameter').value=diameter;
-    Q('label[for=diameter]').setAttribute('value',diameter);
+Q('figure', figure => ['--x','--y','--z','--a'].forEach( p => figure.style.setProperty(p, Math.random()*360+360) ));
+
+const setRange = id => {
+    Q('input[type=range]', input => {
+        let value = Q(`hedron-p[face="${id}"]`).getAttribute(input.id);
+        input.value = value;
+        Q(`label[for=${input.id}]`).setAttribute('value', value);
+    });
 };
+Q('input[name=which]', input => input.onchange = ev => setRange( Q('input[name=which]:checked').id) );
 setRange(12);
-Q('#stroke').onchange=ev=>{
-    ev.target.parentNode.setAttribute('value',ev.target.value);
-    Q(`hedron-p[face="${Q('input[name=which]:checked').id}"]`).setAttribute('stroke',ev.target.value);
-}
-Q('#diameter').onchange=ev=>{
-    ev.target.parentNode.setAttribute('value',ev.target.value);
-    Q(`hedron-p[face="${Q('input[name=which]:checked').id}"]`).setAttribute('diameter',ev.target.value+'em');
-}
+
+const showWidth = id =>
+    Q( id? `label[for='${id}']`:`menu label`, label => label.setAttribute('data-width',
+        window.getComputedStyle( Q(`hedron-p[face='${label.getAttribute('for')}']`).shadow.querySelector('figure') ).width));
+showWidth();
+
+Q('input[type=range]', input => input.onchange = ev => {
+    const selected = Q('input[name=which]:checked').id;
+    Q(`hedron-p[face="${selected}"]`).setAttribute(input.id, ev.target.value);
+    ev.target.parentNode.setAttribute('value', ev.target.value);
+    showWidth(selected);
+});
+
+Q('input[name=truncate]', input => input.onchange = ev => Q('hedron-p', hedron => hedron.setAttribute('truncate', ev.target.id)) );
+
+const checkable = type => [...document.querySelectorAll(`input[${type}]`)].map(input => `#${input.id}:not(:checked)~* label[for=${input.id}]`);
+
+const selector = checkable('type=checkbox');
+Q('head style').insertAdjacentHTML('beforeend', selector + '{border-color:silver; background:none; flex-direction:row-reverse;}' + 
+    `${selector.map(s => s+'::after')} {background:silver}`);
 </script>
