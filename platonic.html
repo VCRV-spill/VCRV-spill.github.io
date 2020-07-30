@@ -99,6 +99,8 @@ figure {
     transform-style:preserve-3d;
     animation:spin 20s linear infinite;
     position:relative;
+    line-height:0;
+    vertical-align:middle;
 }
 @keyframes spin {
     to {transform:rotateX(360deg) rotateY(720deg) rotateZ(1080deg);}
@@ -165,6 +167,7 @@ figure::after {
 </form>
 <section>
     <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p></figure>
+    <button>oo</button>
     <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p></figure>
     <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p></figure>
     <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p></figure>
@@ -198,9 +201,25 @@ Q('input[type=range]', input => input.onchange = ev => {
 
 Q('input[name=truncate]', input => input.onchange = ev => Q('hedron-p', hedron => hedron.setAttribute('truncate', ev.target.id)) );
 
+Q('button', button => button.onclick = ev => {
+    Q('hedron-p[face="12"],hedron-p[face="20"]', hedron => 
+        hedron.shadowRoot.querySelector('polygon').setAttribute('points', hedron.shadowRoot.querySelector('animate').getAttribute('to')) );
+    
+    const receive = Q('hedron-p[face="12"]').shadowRoot;
+    const transfer = Q('hedron-p[face="20"]').shadowRoot;
+    receive.innerHTML += transfer.querySelector('figure').outerHTML;
+    receive.querySelector('defs').appendChild(transfer.querySelector('polygon').cloneNode());
+   
+    const diameter = transfer.querySelector('figure').style.getPropertyValue('--diameter');
+    const scale = receive.querySelector('figure').style.getPropertyValue('--edge') / transfer.querySelector('figure').style.getPropertyValue('--edge');
+    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scale);
+});
+
 const checkable = type => [...document.querySelectorAll(`input[${type}]`)].map(input => `#${input.id}:not(:checked)~* label[for=${input.id}]`);
 
 const selector = checkable('type=checkbox');
 Q('head style').insertAdjacentHTML('beforeend', selector + '{border-color:silver; background:none; flex-direction:row-reverse;}' + 
     `${selector.map(s => s+'::after')} {background:silver}`);
+    
+
 </script>

@@ -2,7 +2,7 @@ customElements.define('hedron-p', class extends HTMLElement {
     constructor() {
         super();
         this.shadow = this.attachShadow( {mode: 'open'} );
-        this.common = `
+        this.css = `<style>
         figure {
             display: inline-flex; justify-content: center; align-items: center;
             margin: 0;
@@ -30,7 +30,41 @@ customElements.define('hedron-p', class extends HTMLElement {
             right: calc(50% * var(--radius));
             transform-origin: calc(50%*(1 + var(--radius))) 50%;
             transform: rotate(var(--r)) rotate3d(0,1,0,var(--slant));
-        }`;
+        }
+        figure[face='4'] svg:only-of-type {
+            transform: translateZ( calc( (var(--height) - var(--extend))*var(--diameter)*1em/2 ) ); 
+        }
+        figure[face='6'] {
+            transform: rotateX(45deg) rotateY(45deg) rotateY(var(--revert));
+            transform-style: preserve-3d;
+        }
+        figure[face='12'] {
+            width: calc(var(--circumradius)*var(--diameter)*1em); height: calc(var(--circumradius)*var(--diameter)*1em);
+        }
+        figure[face='12'] svg:not(:last-child) {
+            transform-origin: var(--originX) var(--originY);
+            transform: rotate3d(var(--vectorX), calc(-1*var(--vectorY)), 0, calc(-1*var(--slant))) rotate(108deg);
+        }
+        figure[face='20'] {
+            --widen: calc(var(--midHeight)/2);
+            --extend: calc(var(--widen) + var(--height));
+        }
+        .middle-1 {
+            transform: translateZ( calc(var(--widen)*var(--diameter)*1em/2) );
+        }
+        .middle-2 {
+            transform: rotateY(180deg) translateZ( calc(var(--widen)*var(--diameter)*1em/2) );
+        }
+        div[class|=middle] svg {
+            left: calc(25%*(1 + var(--stroke)));
+            transform-origin: calc(25%*(1 - var(--stroke))) 50%;
+            transform: rotate(var(--r)) translateX( calc(var(--diameter)*1em/2*var(--normal)) ) rotate3d(0,1,0,var(--midSlant));
+        }
+
+	figure + figure {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); transform-style: preserve-3d;
+        }</style>`;
     }
     get stroke() {
         return this.getAttribute('stroke');
@@ -42,69 +76,31 @@ customElements.define('hedron-p', class extends HTMLElement {
         place.querySelectorAll(`use`).forEach(gon => 
             gon.setAttribute('style', '--c:'+ (this.getAttribute('color') || Math.random()*360)) );
     }
-    elements() {
+    get elements() {
         const svg = document.createElement('svg');
-        svg.innerHTML += `<defs><polygon id=${this.side}><animate begin=indefinite fill=freeze attributeName=points dur='1000ms' /></polygon></defs>`;
-        svg.querySelector('polygon').setAttribute('points', Gon.points(this.side));
+        svg.innerHTML = `
+        <defs>
+            <polygon id=${this.side} points='${Gon.points(this.side)}'>
+                <animate begin=indefinite fill=freeze attributeName=points dur='1000ms' />
+            </polygon>
+        </defs>`;
         
         const figure = document.createElement('figure');
         const faces = {20:5, 12:6, 8:4, 6:3, 4:3};
-        ['vertex-1', ...this.face > 4 ? ['vertex-2', ...this.face == 20 ? ['middle-1', 'middle-2']:[] ]:[] ].forEach(group =>
-            figure.innerHTML += `<div class=${group}>${new Array(faces[this.face]).fill(`<svg><use href=#${this.side} /></svg>`).join('')}</div>
-                ${this.face == 4 ? '<svg><use href=#3 /></svg>':''}`);
-
-        this.color(figure);
+        const svgs = new Array(faces[this.face]).fill(`<svg><use href=#${this.side} /></svg>`).join('');
+        figure.innerHTML = 
+            ['vertex-1', ...this.face > 4 ? ['vertex-2', ...this.face == 20 ? ['middle-1', 'middle-2']:[] ]:[] ].map(group => `
+        <div class=${group}>${svgs}</div>`).join('') + (this.face == 4 ? '<svg><use href=#3 /></svg>':'');
         figure.querySelectorAll('svg').forEach(svg => svg.setAttribute('viewBox', '-1,-1 2,2'));
         
+        this.color(figure);
         return svg.outerHTML + figure.outerHTML;
     }
     connectedCallback() {
-        let vertex;
         this.face = parseInt(this.getAttribute('face'));
-        switch (this.face) {
-            case 20:
-                this.shadow.innerHTML = this.elements() + `
-                <style>${this.common}
-                figure {
-                    --widen: calc(var(--midHeight)/2);
-                    --extend: calc(var(--widen) + var(--height));
-                }
-                .middle-1 {
-                    transform: translateZ( calc(var(--widen)*var(--diameter)*1em/2) );
-                }
-                .middle-2 {
-                    transform: rotateY(180deg) translateZ( calc(var(--widen)*var(--diameter)*1em/2) );
-                }
-                div[class|=middle] svg {
-                    left: calc(25%*(1 + var(--stroke)));
-                    transform-origin: calc(25%*(1 - var(--stroke))) 50%;
-                    transform: rotate(var(--r)) translateX( calc(var(--diameter)*1em/2*var(--normal)) ) rotate3d(0,1,0,var(--midSlant));
-                }</style>`;
-                break;
-            case 6:
-            case 8:
-                this.shadow.innerHTML = this.elements() + `
-                <style>${this.common}</style>`;
-                break;
-            case 4:
-                this.shadow.innerHTML = this.elements() + `
-                <style>${this.common}
-                svg:only-of-type {
-                    transform: translateZ( calc( (var(--height) - var(--extend))*var(--diameter)*1em/2 ) ); 
-                }</style>`;
-                break;
-            case 12:
-                this.shadow.innerHTML = this.elements() + `
-                <style>${this.common}
-                figure {
-                    width: calc(var(--circumradius)*var(--diameter)*1em); height: calc(var(--circumradius)*var(--diameter)*1em);
-                }
-                svg:not(:last-child) {
-                    transform-origin: var(--originX) var(--originY);
-                    transform: rotate3d(var(--vectorX), calc(-1*var(--vectorY)), 0, calc(-1*var(--slant))) rotate(108deg);
-                }</style>`;
-                break;
-        }
+        this.shadow.innerHTML = this.css + this.elements;
+        this.figure = this.shadow.querySelector('figure');
+        this.figure.setAttribute('face', this.face);
         this.attributeChangedCallback();
     }
     
@@ -112,21 +108,25 @@ customElements.define('hedron-p', class extends HTMLElement {
         return ['stroke', 'diameter', 'color', 'truncate'];
     }
     vertex(n) {
-        this.shadowRoot.querySelector('figure').classList.add('vertex');
-        return new Vertex(n, this.stroke, this.shadowRoot, this.face==6);
+        this.figure.classList.add('vertex');
+        this.figure.style.setProperty('--radius', new Gon(this.side, this.stroke).strokedRadius);
+        for (let i=1;i<=n;i++)
+            this.figure.querySelectorAll(`svg:nth-child(${i})`).forEach(svg => svg.style.setProperty('--r', 360/n*i+'deg'));
+        return new Vertex(n, this.stroke, this.side);
     }
     variables(...others) {
         [
             ['--stroke', this.stroke],
             ['--diameter', this.getAttribute('diameter')],
             ...others
-        ].forEach( ([p, v]) => this.shadow.querySelector('figure').style.setProperty(p, v));
+        ].forEach( ([p, v]) => this.figure.style.setProperty(p, v));
     }
     attributeChangedCallback(attr,before,after) {
-        if (attr=='color')
+        if (attr == 'color')
             return this.color(this.shadow);
-        if (attr=='truncate')
+        if (attr == 'truncate')
             return this.truncate(after);
+        this.truncate(this.getAttribute('truncate'));
         let vertex;
         switch (this.face) {
             case 20:
@@ -162,7 +162,7 @@ customElements.define('hedron-p', class extends HTMLElement {
                         ['--vectorX', Math.cos(penta.centerAngle * (i + 1)) - x],
                         ['--vectorY', Math.sin(penta.centerAngle * (i + 1)) - y]
                     ].forEach( ([p, v]) =>
-                        this.shadowRoot.querySelectorAll(`svg:nth-child(${i+1})`).forEach(svg => svg.style.setProperty(p, v)));
+                        this.figure.querySelectorAll(`svg:nth-child(${i+1})`).forEach(svg => svg.style.setProperty(p, v)));
                 }
                 
                 penta.diagonal = penta.side * Math.cos(Math.PI * (1 - 3 / 5) / 2) * 2;
@@ -185,28 +185,29 @@ customElements.define('hedron-p', class extends HTMLElement {
                 const TRI = new Gon(3,0);
                 TRI.scale = 2 / TRI.side;
                 this.variables(
+                    ['--revert', Math.PI/2 - Math.acos(Math.sqrt(3)/3) + 'rad'],
                     ['--slant', Math.acos(TRI.scale/2) + 'rad'],
                     ['--extend', Math.pow(Math.pow(square.strokedRadius*2,2) + Math.pow(square.side,2), 1/2) / 2]);
                 break;
         }
     }
     truncate(level) {
-        this.shadow.querySelectorAll('polygon').forEach(gon => {
-            let points;
-            const side = parseInt(gon.id);
-            if (level=='none') 
-                points = Gon.points(side);
-            if (level=='semi') 
-                points = Gon.points(side*2, new Gon(side).truncatedRadius, Math.PI/side/-2);
-            if (level=='full') {
-                const r = new Gon(side, this.stroke).normal;
-                points = Gon.points(side, r - (new Gon(side, this.stroke, r).strokedRadius - r), -Math.PI/side, true);
-            }
-            const animate = gon.querySelector('animate');
-            animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
-            animate.setAttribute('to', points);
-            animate.beginElement();
-        });
+        if (!level) return;
+        let points;
+        if (level=='none') 
+            points = Gon.points(this.side);
+        if (level=='semi') 
+            points = Gon.points(this.side*2, new Gon(this.side).truncatedRadius, Math.PI/this.side/-2);
+        if (level=='full') {
+            const r = new Gon(this.side, this.stroke).normal;
+            const strokeAdjusted = r - (new Gon(this.side, this.stroke, r).strokedRadius - r);
+            points = Gon.points(this.side, strokeAdjusted, -Math.PI/this.side, true);
+            this.figure.style.setProperty('--edge', new Gon(this.side, this.stroke, strokeAdjusted).side);
+        }
+        const animate = this.shadow.querySelector('polygon animate');
+        animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
+        animate.setAttribute('to', points);
+        animate.beginElement();
     }
 });
 class Gon {
@@ -220,21 +221,18 @@ class Gon {
         const points=[...Array(n).keys()].map(i=> [...point(i), ... n<6? point(i):[] ] ).flat();
         return (alt? [...points.slice(2),...points.slice(0,2)] : points).join(' ');
     }
-    get halfAngle()   {return Math.PI*(1-2/this.n)/2;}
-    get centerAngle() {return 2*Math.PI/this.n;}
-    get normal()  {return this.r*Math.sin(this.halfAngle)+this.stroke/2;}
-    get side()    {return this.normal/Math.tan(this.halfAngle)*2;}
-    get strokedRadius() {return this.normal/Math.sin(this.halfAngle);}
-    get height()  {return this.strokedRadius*(1+Math.cos(this.centerAngle/2));}
+    get halfAngle()       {return Math.PI*(1-2/this.n)/2;}
+    get centerAngle()     {return 2*Math.PI/this.n;}
+    get normal()          {return this.r*Math.sin(this.halfAngle)+this.stroke/2;}
+    get side()            {return this.normal/Math.tan(this.halfAngle)*2;}
+    get strokedRadius()   {return this.normal/Math.sin(this.halfAngle);}
+    get height()          {return this.strokedRadius*(1+Math.cos(this.centerAngle/2));}
     get truncatedRadius() {return this.r*Math.sin(this.halfAngle)/Math.sin(Math.PI-new Gon(this.n*2).centerAngle/2-this.halfAngle);}
 }
 class Vertex {
-    constructor(n,stroke,place,square) {
+    constructor(n,stroke,side) {
         this.n=n;
-        this.gon=new Gon(square? 4:3,stroke);
-        place.querySelector('figure').style.setProperty('--radius',this.gon.strokedRadius);
-        for (let i=1;i<=n;i++)
-            place.querySelectorAll(`svg:nth-child(${i})`).forEach(svg=>svg.style.setProperty('--r',360/n*i+'deg'));
+        this.gon=new Gon(side,stroke);
     }
     get normal()    {return this.gon.side/2/Math.tan(2*Math.PI/this.n/2);}
     get radius()    {return this.gon.side/2/Math.sin(2*Math.PI/this.n/2);}
