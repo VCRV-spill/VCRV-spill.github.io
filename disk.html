@@ -123,7 +123,7 @@ const table = Q('table');
 const rows = table.querySelectorAll('tr').length;
 table.style.setProperty('--rows', rows);
 
-let got = JSON.parse(cookie('got') || null) || [];
+let got = JSON.parse(cookie.got || null) || [];
 got.forEach(coor => {
     const [r, d] = coor.split(',').map(n => parseInt(n));
     Q(`tr:nth-child(${r+1}) td:nth-child(${d+1})`).classList.add('got');
