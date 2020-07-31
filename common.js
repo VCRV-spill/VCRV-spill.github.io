@@ -1,0 +1,1 @@
+const Q=(el,func)=>func? document.querySelectorAll(el).forEach(func):document.querySelector(el);

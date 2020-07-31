@@ -5,7 +5,7 @@ h1,h2,h3,h4,h5,h6 {
   all:unset;
 }
 :root {
-  font-size:18px;
+  font-size:3vw;
   font-family:sans-serif;
   background:linear-gradient(135deg,hsl(55,80%,70%),hsl(105,70%,80%));
   --theme:hsl(80,50%,50%);
@@ -16,11 +16,18 @@ body {
   margin:2em .5em;
   text-align:center;
 }
+@media (min-width:600px) {
+  :root {font-size:18px;}
+  body {margin:2em 3vw;}
+}
 body>*:not(script) {
   max-width:1000px;
   margin-left:auto;margin-right:auto;
 }
-menu,ul,ol {
+article {
+  text-align:left;
+}
+menu,ul,ol,dl,dt,dd {
   margin:0;padding:0;
 }
 li {
@@ -45,9 +52,6 @@ label {
   width:2rem;height:2rem;line-height:2rem;
   border-radius:9em;
   background:var(--theme);    
-}
-@media (max-width:600px) {
-  :root {font-size:3vw;}
 }
 input[type='range'] {
     -webkit-appearance:none;

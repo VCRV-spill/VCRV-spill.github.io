@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<title>Painted disks</title>
+<meta name="format-detection" content="telephone=no">
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<link rel=stylesheet href='common.css'>
+<script src='common.js'></script>
+<style>
+table {
+    perspective:200em;
+    margin:auto;
+    --width:4.5rem;width:var(--width);
+    --height:2.5rem;height:calc(var(--height)*12);
+    --extend:calc(var(--width)*var(--rows)/2/3);
+    perspective-origin:50% 150%;
+    -webkit-perspective-origin:50% 150%;
+    cursor:grab;
+}
+tbody {
+    --spin:calc(360deg/var(--rows)*(var(--checked) - 1)); 
+    transform:translateZ(calc(-1*var(--extend))) rotateY(calc(-1*var(--spin)));
+    transform-style:preserve-3d;
+    position:relative;
+    will-change:transform;transition:1s;
+}
+tr {
+    --position:calc(360deg/var(--rows)*(var(--index) - 1));
+    transform:rotateY(var(--position)) translateZ(var(--extend));
+    position:absolute;
+    width:100%;
+    will-change:transform;transition:1s;
+    user-select:none;-webkit-user-select:none;
+}
+td {
+    display:flex;justify-content:center;align-items:center;
+    height:var(--height);
+    margin:0.2em 0;
+    border:0.1em solid;
+    background:hsl(0,0%,100%,0.9);
+    position:relative;
+    z-index:0;
+    font-size:1.3em;white-space:nowrap;
+}
+td:nth-child(1) {color:sienna;}
+td:nth-child(2) {color:gold;}
+td:nth-child(3) {color:forestgreen;}
+td:nth-child(4) {color:dodgerblue;}
+td:nth-child(5) {color:slateblue;}
+td:nth-child(6) {color:darkorchid;}
+td:nth-child(7) {color:crimson;}
+td:nth-child(8) {color:black;}
+
+td:empty {
+    border-color:silver;
+    color:lightgray;
+}
+td::before {
+    content:attr(title);
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:2rem;font-style:italic;
+    z-index:-1;
+}
+dl::before {
+    content:'圖例\A';
+    white-space:pre;
+}
+dd,dt {
+    display:inline;
+}
+dd {
+    margin-left:1em;
+}
+</style>
+
+<main>
+    <article>
+        <dl>
+            <dt>🎰<dd>コロコロ雜誌抽選（100 / 321 / 1000 名）<br>
+            <dt>🥇<dd>G1 大會第一名賞品<br>
+            <dt>🥉<dd>G1 大會第三名賞品<br>
+            <dt>🥈<dd>G4 大會第二名賞品<br>
+            <dt>🎫<dd>みんなのくじ獎券賞<br>
+            <dt>🈂️<dd>コロコロ雜誌全員 service 應募品<br>
+            <dt>💻<dd>コロコロ網店商品<br>
+            <dt>🛒<dd>B- 商品<br>
+            <dt>🛍<dd>BBG-/BA- 商品<br>
+            <dt>🎮<dd>遊戲軟件同綑品<br>
+            <dt>🎁<dd>購物滿額贈品<br>
+        </dl>
+    </article>
+    <table>
+        <tbody style="--checked:1"></tbody>
+    </table>
+</main>
+<script>
+const disks = ['00','0','1','1′','2','3','4','5','6','7','8','8′','10','11','12','13'];
+     /*Br   Go/Y    G    B       PB   P     R      Bl*/
+[   [0   ,'🛍'   ,0   ,'🎰🛍' ,0   ,0    ,'🎰🛍','💻'    ], /*00*/
+    [0   ,'🛍🥈' ,0   ,0      ,0   ,'🈂️','🎰💻','🎰💻'  ], /*0*/
+    [0   ,'🎰'   ,0   ,0      ,0   ,0    ,0     ,0       ], /*1*/
+    [0   ,0      ,0   ,0      ,0   ,0    ,'🛍'  ,0       ], /*1'*/
+    [0   ,'🥈'   ,0   ,'💻'   ,0   ,0    ,0     ,0       ], /*2*/
+    [0   ,0      ,0   ,'🎮'   ,0   ,0    ,'🛒'  ,0       ], /*3*/
+    [0   ,0      ,0   ,'💻'   ,0   ,0    ,'🛒'  ,'🥈🛍💻'], /*4*/
+    [0   ,'🎁'   ,0   ,0      ,0   ,0    ,0     ,0       ], /*5*/
+    ['🥉','🥇'   ,0   ,'🎰'   ,0   ,'💻' ,'🎰'  ,0       ], /*6*/
+    [0   ,'🛍'   ,'🛒',0      ,0   ,0    ,'🎰🎁','🈂️'   ], /*7*/
+    [0   ,0      ,0   ,'🎫🈂️',0   ,'🎰' ,'🎫'  ,0       ], /*8*/
+    [0   ,'🎰'   ,0   ,0      ,0   ,0    ,0     ,'💻'    ], /*8'*/
+    [0   ,'🎰🈂️','🛍','🎰'   ,0   ,0    ,'🈂️' ,0       ], /*10*/
+    ['🥉','🥇'   ,0   ,'🎰💻' ,0   ,0    ,'🛒'  ,0       ], /*11*/
+    [0   ,0      ,0   ,'🛒'   ,'💻',0    ,0     ,0       ], /*12*/
+    [0   ,'🎰'   ,0   ,0      ,0   ,0    ,0     ,0       ]  /*13*/
+].forEach((tr, i) => Q('tbody').insertAdjacentHTML('beforeend', `<tr>${tr.map(td => `<td title=${disks[i]}>${td || ''}</td>`).join('')}</tr>`));
+
+Q('tr', (tr, i) => tr.style.setProperty('--index', i+1));
+const table = Q('table');
+const rows = table.querySelectorAll('tr').length;
+table.style.setProperty('--rows', rows);
+
+let got = 0 || [];
+Q('td', td => td.onclick = () => {
+    const coor = [...td.parentElement.parentElement.children].indexOf(td.parentElement) + ',' + [...td.parentElement.children].indexOf(td);
+    got = got.includes(coor)? got.filter(c => c != coor) : [...got, coor];
+    document.cookie = `got=${JSON.stringify(got)};path=/;max-age=888888`;
+    console.log(got);
+});
+
+const spin = n => {
+    const cylinder = Q('tbody');
+    Q('tr', tr => tr.removeAttribute('class'));
+    const k = parseInt(getComputedStyle(cylinder).getPropertyValue('--checked')) + n;
+    cylinder.style.setProperty('--checked', k);
+};
+spin(0);
+
+let [start, end] = [0, 0];
+
+table.onmousedown = table.ontouchstart = () => start = event.clientX || event.touches[0].clientX;
+document.onmouseup = document.ontouchend = () => start = 0   ;
+table.onmousemove = table.ontouchmove = () => {
+    if (!start) return;
+    end = event.clientX || event.touches[0].clientX;
+    const diff = - parseInt((end - start) / 50);
+    if (Math.abs(diff) >= 1) {
+        spin(diff);
+        start = end;
+    }
+};
+</script>
