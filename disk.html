@@ -35,25 +35,30 @@ td {
     display:flex;justify-content:center;align-items:center;
     height:var(--height);
     margin:0.2em 0;
-    border:0.1em solid;
-    background:hsl(0,0%,100%,0.9);
+    border:0.1em solid var(--c);
+    color:var(--c);
+    background:white;
     position:relative;
     z-index:0;
     font-size:1.3em;white-space:nowrap;
 }
-td:nth-child(1) {color:sienna;}
-td:nth-child(2) {color:gold;}
-td:nth-child(3) {color:forestgreen;}
-td:nth-child(4) {color:dodgerblue;}
-td:nth-child(5) {color:slateblue;}
-td:nth-child(6) {color:darkorchid;}
-td:nth-child(7) {color:crimson;}
-td:nth-child(8) {color:black;}
-
 td:empty {
     border-color:silver;
     color:lightgray;
 }
+td.got {
+    background:var(--c);
+    color:white;
+}
+td:nth-child(1) {--c:sienna;}
+td:nth-child(2) {--c:gold;}
+td:nth-child(3) {--c:forestgreen;}
+td:nth-child(4) {--c:dodgerblue;}
+td:nth-child(5) {--c:slateblue;}
+td:nth-child(6) {--c:darkorchid;}
+td:nth-child(7) {--c:crimson;}
+td:nth-child(8) {--c:black;}
+
 td::before {
     content:attr(title);
     position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -118,10 +123,16 @@ const table = Q('table');
 const rows = table.querySelectorAll('tr').length;
 table.style.setProperty('--rows', rows);
 
-let got = 0 || [];
+let got = JSON.parse(cookie('got') || null) || [];
+got.forEach(coor => {
+    const [r, d] = coor.split(',').map(n => parseInt(n));
+    Q(`tr:nth-child(${r+1}) td:nth-child(${d+1})`).classList.add('got');
+});
 Q('td', td => td.onclick = () => {
+    if (!td.innerText) return;
     const coor = [...td.parentElement.parentElement.children].indexOf(td.parentElement) + ',' + [...td.parentElement.children].indexOf(td);
-    got = got.includes(coor)? got.filter(c => c != coor) : [...got, coor];
+    got = td.classList.contains('got')? got.filter(c => c != coor) : [...got, coor];
+    td.classList.toggle('got');
     document.cookie = `got=${JSON.stringify(got)};path=/;max-age=888888`;
     console.log(got);
 });

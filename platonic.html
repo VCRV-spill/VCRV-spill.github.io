@@ -208,9 +208,9 @@ Q('button', button => button.onclick = ev => {
     receive.innerHTML += transfer.querySelector('figure').outerHTML;
     receive.querySelector('defs').appendChild(transfer.querySelector('polygon').cloneNode());
    
-    const diameter = transfer.querySelector('figure').style.getPropertyValue('--diameter');
-    const scale = receive.querySelector('figure').style.getPropertyValue('--edge') / transfer.querySelector('figure').style.getPropertyValue('--edge');
-    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scale);
+    const diameter = receive.querySelector('figure').style.getPropertyValue('--diameter');
+    const scaled = receive.querySelector('figure').style.getPropertyValue('--edge') / transfer.querySelector('figure').style.getPropertyValue('--edge');
+    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled);
 });
 
 const checkable = type => [...document.querySelectorAll(`input[${type}]`)].map(input => `#${input.id}:not(:checked)~* label[for=${input.id}]`);

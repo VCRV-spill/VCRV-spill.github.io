@@ -121,11 +121,14 @@ customElements.define('hedron-p', class extends HTMLElement {
             ...others
         ].forEach( ([p, v]) => this.figure.style.setProperty(p, v));
     }
-    attributeChangedCallback(attr,before,after) {
+    attributeChangedCallback(attr, before, after) {
         if (attr == 'color')
             return this.color(this.shadow);
         if (attr == 'truncate')
             return this.truncate(after);
+        if (attr == 'diameter')
+            return this.variables([]);
+
         this.truncate(this.getAttribute('truncate'));
         let vertex;
         switch (this.face) {
