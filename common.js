@@ -1,2 +1,2 @@
 const Q = (el, func) => func ? document.querySelectorAll(el).forEach(func) : document.querySelector(el);
-const cookie = key => document.cookie.split(/;\s?/).map(o => o.split('=')).reduce( (obj, [k,v]) => ({...obj, [k]:v}) , {});
+const cookie = document.cookie.split(/;\s?/).map(o => o.split('=')).reduce( (obj, [k,v]) => ({...obj, [k]:v}) , {});

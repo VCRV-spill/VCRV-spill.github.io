@@ -134,7 +134,6 @@ Q('td', td => td.onclick = () => {
     got = td.classList.contains('got')? got.filter(c => c != coor) : [...got, coor];
     td.classList.toggle('got');
     document.cookie = `got=${JSON.stringify(got)};path=/;max-age=888888`;
-    console.log(got);
 });
 
 const spin = n => {
