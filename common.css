@@ -11,6 +11,7 @@ h1,h2,h3,h4,h5,h6 {
   --theme:hsl(80,50%,50%);
   --theme-bg:hsl(80,80%,70%);
   min-height:100%;
+  overflow-x:hidden;
 }
 body {
   margin:2em .5em;

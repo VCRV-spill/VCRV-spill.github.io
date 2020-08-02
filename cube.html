@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<title>Cubes</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<script src='common.js'></script>
+<link rel=stylesheet href='common.css'>
+<style>
+@keyframes turning {
+    from {transform: rotate3d(var(--rx0),var(--ry0),var(--rz0),var(--ra0)) translate3d(var(--tx0),var(--ty0),var(--tz0));}
+    to {transform: rotate3d(var(--rx1),var(--ry1),var(--rz1),var(--ra1)) translate3d(var(--tx1),var(--ty1),var(--tz1));} 
+}
+figure {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%,-50%);
+    perspective: 2500px; z-index: -99;
+    width: var(--side); height: var(--side);
+    transform-style: preserve-3d;
+    animation: turning var(--time) linear infinite alternate;
+}
+figure div {
+    position: absolute;
+    font-size: var(--side);
+    width:1em; height:1em;
+    background: hsla(var(--h),var(--s),var(--l),var(--a));
+    border: 0.02em solid hsl(var(--h),var(--s),calc(var(--l) - 20%));
+    transform: rotateX(var(--position)) translateZ(0.5em);
+}
+div.left,div.right {
+    transform: rotateY(var(--position)) translateZ(0.5em); }
+div.front {
+    --position: 0deg; }
+div.back {
+    --position: 180deg; }
+div.top,div.right {
+    --position: 90deg; }
+div.bottom,div.left {
+    --position: -90deg; }
+</style>
+<h1></h1>
+<script>
+customElements.define('flying-cube', class extends HTMLElement {
+    constructor() {
+        super();
+        this.shadow = this.attachShadow( {mode: 'open'} );
+        const cube = document.createElement('figure');
+        cube.innerHTML = ['front', 'back', 'right', 'left', 'top', 'bottom'].map(f => `<div class=${f}></div>`).join('');
+        const size = parseInt(parameter.size) || 100;
+        const speed = (parseInt(parameter.speed) || 100) / 100;
+        [
+            ['--side', (Math.random()*200+size)/100 + 'em'],
+            ['--h', Math.random()*360],
+            ['--s', Math.random()*40+60 + '%'],
+            ['--l', Math.random()*40+60 + '%'],
+            ['--a', Math.random()*0.5+0.5],
+            ['--time', (Math.random()*20+20)/speed + 's'],
+            ['--rx0', this.rand(1)], ['--ry0', this.rand(1)], ['--rz0', this.rand(1)], ['--ra0', this.rand(2000) + 'turn'],
+            ['--tx0', this.rand(40) + 'vw'], ['--ty0', this.rand(40) + 'vh'], ['--tz0', this.rand(40) + 'vmin'], 
+            ['--rx1', this.rand(1)], ['--ry1', this.rand(1)], ['--rz1', this.rand(1)], ['--ra1', this.rand(2000) + 'turn'],
+            ['--tx1', this.rand(40) + 'vw'], ['--ty1', this.rand(40) + 'vh'], ['--tz1', this.rand(40) + 'vmin']
+        ].forEach( ([p,v]) => cube.style.setProperty(p,v) );
+        this.shadow.innerHTML = cube.outerHTML + Q('style').outerHTML;
+    }
+    rand(r) {
+        return (Math.random()*2-1)*r;
+    }
+});
+for (let i = 1; i <= (parseInt(parameter.amount) || 20); i++)
+    document.body.appendChild(document.createElement('flying-cube'));
+</script>

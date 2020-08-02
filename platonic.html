@@ -94,8 +94,10 @@ label[value]::after {
 }
 figure {
     display:inline-flex;
+    animation:spin 30s infinite linear;
+    transform:rotateY(calc(1deg*var(--ry))) rotateZ(calc(1deg*var(--rx))) ;
     transform-style:preserve-3d;
-    animation:spin 20s linear infinite;
+    transition:.5s;
     position:relative;
     line-height:0;
     vertical-align:middle;
@@ -147,7 +149,7 @@ figure::after {
         <input type=radio name=which id=4>
         <label for=4>Tetrahedron</label>
 </menu>
-<input type=checkbox id=ring checked>
+<input type=checkbox id=ring>
 <input type=checkbox id=spin checked>
 <input type=radio name=truncate id=none checked>
 <input type=radio name=truncate id=semi>
@@ -173,7 +175,10 @@ figure::after {
 </section>
 
 <script>
-Q('figure', figure => ['--x','--y','--z','--a'].forEach( p => figure.style.setProperty(p, Math.random()*360+360) ));
+Q('figure', figure => {
+    ['--x','--y','--z','--a'].forEach( p => figure.style.setProperty(p, Math.random()*360+360) );
+    ['--rx','--ry'].forEach( p => figure.style.setProperty(p, 0) );
+});
 
 const setRange = id => {
     Q('input[type=range]', input => {
@@ -199,25 +204,52 @@ Q('input[type=range]', input => input.onchange = ev => {
 
 Q('input[name=truncate]', input => input.onchange = ev => Q('hedron-p', hedron => hedron.setAttribute('truncate', ev.target.id)) );
 
-Q('button', button => button.onclick = ev => {
-    Q('hedron-p[face="12"],hedron-p[face="20"]', hedron => 
-        hedron.shadowRoot.querySelector('polygon').setAttribute('points', hedron.shadowRoot.querySelector('animate').getAttribute('to')) );
+const merge = (transfer, receive) => {
+    const clone = Q(`hedron-p[face="${receive}"]`).parentNode.cloneNode(true);
+    Q(`hedron-p[face="${receive}"]`).parentNode.insertAdjacentElement('afterend', clone);
     
-    const receive = Q('hedron-p[face="12"]').shadowRoot;
-    const transfer = Q('hedron-p[face="20"]').shadowRoot;
+    if (Q('#full').checked)
+    Q(`hedron-p[face="${transfer}"],hedron-p[face="${receive}"]`, hedron => {
+        hedron.shadowRoot.querySelector('polygon').setAttribute('points', hedron.shadowRoot.querySelector('animate').getAttribute('to')) 
+        //setTimeout(() => hedron.style.display = 'none', 1000);
+    });
+    
+    receive = clone.querySelector('hedron-p').shadowRoot;
+    transfer = Q(`hedron-p[face="${transfer}"]`).shadowRoot;
     receive.innerHTML += transfer.querySelector('figure').outerHTML;
-    receive.querySelector('defs').appendChild(transfer.querySelector('polygon').cloneNode());
+    receive.querySelector('defs').appendChild(transfer.querySelector('polygon').cloneNode(true));
    
+    if (Q('#full').checked) {
     const diameter = receive.querySelector('figure').style.getPropertyValue('--diameter');
     const scaled = receive.querySelector('figure').style.getPropertyValue('--edge') / transfer.querySelector('figure').style.getPropertyValue('--edge');
-    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled);
+    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled); }
+}
+Q('button', button => button.onclick = () => {
+    merge(20, 12);
+    merge(8, 6);
 });
 
-const checkable = type => [...document.querySelectorAll(`input[${type}]`)].map(input => `#${input.id}:not(:checked)~* label[for=${input.id}]`);
+const inputs = new Inputs('input[type=checkbox]', false);
+inputs.labels().setCSS('{border-color:silver; background:none; flex-direction:row-reverse;}');
+inputs.labels('::after').setCSS('{background:silver}');
 
-const selector = checkable('type=checkbox');
-Q('head style').insertAdjacentHTML('beforeend', selector + '{border-color:silver; background:none; flex-direction:row-reverse;}' + 
-    `${selector.map(s => s+'::after')} {background:silver}`);
-    
-
+let [start, end] = [null, null];
+Q('figure', figure => {
+    figure.onmousedown = figure.ontouchstart = () => 
+        start = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
+    figure.onmousemove = figure.ontouchmove = () => {
+        if (!start) return;
+        end = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
+        const diff = [end[0] - start[0], end[1] - start[1]].map(c => -parseInt(c/50));
+        if (Math.abs(diff[0]) >= 1) {
+            figure.style.setProperty('--ry', parseInt(figure.style.getPropertyValue('--ry')) - diff[0]*30);
+            start[0] = end[0];
+        }
+        if (Math.abs(diff[1]) >= 1) {
+            figure.style.setProperty('--rx', parseInt(figure.style.getPropertyValue('--rx')) + diff[1]*30);
+            start[1] = end[1];
+        }
+    };
+});
+document.onmouseup = document.ontouchend = () => start = null;
 </script>

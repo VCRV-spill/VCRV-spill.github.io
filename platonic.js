@@ -29,13 +29,13 @@ customElements.define('hedron-p', class extends HTMLElement {
         .vertex div[class|=vertex] svg {
             right: calc(50% * var(--radius));
             transform-origin: calc(50%*(1 + var(--radius))) 50%;
-            transform: rotate(var(--r)) rotate3d(0,1,0,var(--slant));
+            transform: rotate(var(--r)) translate3d(var(--expand),0,calc(var(--slope)*var(--expand))) rotate3d(0,1,0,var(--slant));
         }
         figure[face='4'] svg:only-of-type {
             transform: translateZ( calc( (var(--height) - var(--extend))*var(--diameter)*1em/2 ) ); 
         }
         figure[face='6'] {
-            transform: rotateX(45deg) rotateY(45deg) rotateY(var(--revert));
+            transform:rotateY(calc(-1*var(--revert)));
             transform-style: preserve-3d;
         }
         figure[face='12'] {
@@ -118,6 +118,7 @@ customElements.define('hedron-p', class extends HTMLElement {
         [
             ['--stroke', this.stroke],
             ['--diameter', this.getAttribute('diameter')],
+            ['--expand', '0em'],
             ...others
         ].forEach( ([p, v]) => this.figure.style.setProperty(p, v));
     }
@@ -126,7 +127,7 @@ customElements.define('hedron-p', class extends HTMLElement {
             return this.color(this.shadow);
         if (attr == 'truncate')
             return this.truncate(after);
-        if (attr == 'diameter')
+        if (attr == 'diameter' && this.figure)
             return this.variables([]);
 
         this.truncate(this.getAttribute('truncate'));
@@ -137,6 +138,7 @@ customElements.define('hedron-p', class extends HTMLElement {
                 this.variables(
                     ['--normal', vertex.normal],
                     ['--slant', vertex.slant + 'rad'],
+                    ['--slope', Math.tan(Math.PI/2 - vertex.slant)],
                     ['--height', vertex.height],
                     ['--midSlant', vertex.midSlant + 'rad'],
                     ['--midHeight', vertex.midHeight]);
@@ -145,12 +147,14 @@ customElements.define('hedron-p', class extends HTMLElement {
                 vertex = this.vertex(4);
                 this.variables(
                     ['--slant', vertex.slant + 'rad'],
+                    ['--slope', Math.tan(Math.PI/2 - vertex.slant)],
                     ['--extend', vertex.height]);
                 break;
             case 4:
                 vertex = this.vertex(3);
                 this.variables(
                     ['--slant', vertex.slant + 'rad'],
+                    ['--slope', Math.tan(Math.PI/2 - vertex.slant)],
                     ['--height', vertex.height],
                     ['--extend', (Math.pow(vertex.gon.strokedRadius, 2) + Math.pow(vertex.height, 2)) / 2 / vertex.height]);
                 break;
@@ -188,8 +192,9 @@ customElements.define('hedron-p', class extends HTMLElement {
                 const TRI = new Gon(3,0);
                 TRI.scale = 2 / TRI.side;
                 this.variables(
-                    ['--revert', Math.PI/2 - Math.acos(Math.sqrt(3)/3) + 'rad'],
+                    ['--revert', Math.acos(new Gon(3, 0, 2 / new Gon(3).side).normal) + 'rad'],
                     ['--slant', Math.acos(TRI.scale/2) + 'rad'],
+                    ['--slope', Math.tan(Math.PI/2 - vertex.slant)],
                     ['--extend', Math.pow(Math.pow(square.strokedRadius*2,2) + Math.pow(square.side,2), 1/2) / 2]);
                 break;
         }
@@ -205,7 +210,7 @@ customElements.define('hedron-p', class extends HTMLElement {
             const r = new Gon(this.side, this.stroke).normal;
             const strokeAdjusted = r - (new Gon(this.side, this.stroke, r).strokedRadius - r);
             points = Gon.points(this.side, strokeAdjusted, -Math.PI/this.side, true);
-            this.figure.style.setProperty('--edge', new Gon(this.side, this.stroke, strokeAdjusted).side);
+            if (this.figure) this.figure.style.setProperty('--edge', new Gon(this.side, this.stroke, strokeAdjusted).side);
         }
         const animate = this.shadow.querySelector('polygon animate');
         animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
