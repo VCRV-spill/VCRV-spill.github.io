@@ -151,6 +151,7 @@ figure::after {
 </menu>
 <input type=checkbox id=ring>
 <input type=checkbox id=spin checked>
+<input type=checkbox id=merge>
 <input type=radio name=truncate id=none checked>
 <input type=radio name=truncate id=semi>
 <input type=radio name=truncate id=full>
@@ -162,12 +163,12 @@ figure::after {
     <label for=semi class='toggle single' data-icon=🔪></label>
     <label for=full class='toggle single' data-icon=🔪 style='justify-content:center'></label>
     <label class=toggle data-icon=🎨 title='Color' onclick="Q('hedron-p',solid=>solid.setAttribute('color',''))"></label>
+    <label for=merge class=toggle data-icon=↔️ title='Merge' style='display:none' onclick="merge(20,12);merge(8,6)"></label>
     <label for=Stroke><input type=range min=0 max=.5 step=.01 id=Stroke></label>
     <label for=Diameter><input type=range min=5 max=20 step=.1 id=Diameter></label>
 </form>
 <section>
     <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p></figure>
-    <button>oo</button>
     <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p></figure>
     <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p></figure>
     <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p></figure>
@@ -202,54 +203,72 @@ Q('input[type=range]', input => input.onchange = ev => {
     showWidth(selected);
 });
 
-Q('input[name=truncate]', input => input.onchange = ev => Q('hedron-p', hedron => hedron.setAttribute('truncate', ev.target.id)) );
+Q('input[name=truncate]', input => input.onchange = ev => truncate(ev.target.id));
+const truncate = level => {
+    if (level == 'full')
+        Q('label[for=merge]').style.display = 'inline-flex';
+    Q('hedron-p', hedron => {
+        let points;
+        if (level == 'none') 
+            points = Gon.points(hedron.side);
+        if (level == 'semi') 
+            points = Gon.points(hedron.side*2, new Gon(hedron.side).truncatedR, Math.PI/hedron.side/-2);
+        if (level == 'full') {
+            const r = new Gon(hedron.side, hedron.stroke).normal;
+            const strokeAdjusted = r - (new Gon(hedron.side, hedron.stroke, r).strokedR - r);
+            points = Gon.points(hedron.side, strokeAdjusted, -Math.PI/hedron.side, true);
+            hedron.figure.style.setProperty('--edge', new Gon(hedron.side, hedron.stroke, strokeAdjusted).side);
+        }
+        const animate = hedron.shadow.querySelector('polygon animate');
+        animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
+        animate.setAttribute('to', points);
+        animate.beginElement();
+    });
+};
 
 const merge = (transfer, receive) => {
     const clone = Q(`hedron-p[face="${receive}"]`).parentNode.cloneNode(true);
+    clone.querySelector('hedron-p').removeAttribute('face');
     Q(`hedron-p[face="${receive}"]`).parentNode.insertAdjacentElement('afterend', clone);
     
-    if (Q('#full').checked)
-    Q(`hedron-p[face="${transfer}"],hedron-p[face="${receive}"]`, hedron => {
-        hedron.shadowRoot.querySelector('polygon').setAttribute('points', hedron.shadowRoot.querySelector('animate').getAttribute('to')) 
-        //setTimeout(() => hedron.style.display = 'none', 1000);
+    let [trS, reS] = [Q(`hedron-p[face="${transfer}"]`), Q(`hedron-p[face="${receive}"]`)].map(hedron => hedron.shadowRoot);
+    let cloneS = clone.querySelector('hedron-p').shadowRoot;
+    cloneS.innerHTML += trS.querySelector('figure').outerHTML;
+    
+    const defs = cloneS.querySelector('defs');
+    defs.innerHTML = '';
+    [trS, reS].map(shadow => shadow.querySelector('polygon')).forEach(polygon => {
+        polygon.setAttribute('points', polygon.querySelector('animate').getAttribute('to')); 
+        defs.appendChild(polygon.cloneNode(true));
     });
     
-    receive = clone.querySelector('hedron-p').shadowRoot;
-    transfer = Q(`hedron-p[face="${transfer}"]`).shadowRoot;
-    receive.innerHTML += transfer.querySelector('figure').outerHTML;
-    receive.querySelector('defs').appendChild(transfer.querySelector('polygon').cloneNode(true));
-   
-    if (Q('#full').checked) {
-    const diameter = receive.querySelector('figure').style.getPropertyValue('--diameter');
-    const scaled = receive.querySelector('figure').style.getPropertyValue('--edge') / transfer.querySelector('figure').style.getPropertyValue('--edge');
-    receive.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled); }
-}
-Q('button', button => button.onclick = () => {
-    merge(20, 12);
-    merge(8, 6);
-});
+    [trS, reS] = [trS, reS].map(shadow => shadow.querySelector('figure').style);
+    const diameter = reS.getPropertyValue('--diameter').replace('em','');
+    const scaled = reS.getPropertyValue('--edge') / trS.getPropertyValue('--edge');
+    cloneS.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled + 'em');
+};
 
 const inputs = new Inputs('input[type=checkbox]', false);
 inputs.labels().setCSS('{border-color:silver; background:none; flex-direction:row-reverse;}');
 inputs.labels('::after').setCSS('{background:silver}');
 
-let [start, end] = [null, null];
-Q('figure', figure => {
-    figure.onmousedown = figure.ontouchstart = () => 
-        start = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
-    figure.onmousemove = figure.ontouchmove = () => {
-        if (!start) return;
-        end = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
-        const diff = [end[0] - start[0], end[1] - start[1]].map(c => -parseInt(c/50));
-        if (Math.abs(diff[0]) >= 1) {
-            figure.style.setProperty('--ry', parseInt(figure.style.getPropertyValue('--ry')) - diff[0]*30);
-            start[0] = end[0];
-        }
-        if (Math.abs(diff[1]) >= 1) {
-            figure.style.setProperty('--rx', parseInt(figure.style.getPropertyValue('--rx')) + diff[1]*30);
-            start[1] = end[1];
-        }
-    };
-});
-document.onmouseup = document.ontouchend = () => start = null;
+//let [start, end] = [null, null];
+//Q('figure', figure => {
+//    figure.onmousedown = figure.ontouchstart = () => 
+//        start = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
+//    figure.onmousemove = figure.ontouchmove = () => {
+//        if (!start) return;
+//        end = [event.clientX || event.touches[0].clientX, event.clientY || event.touches[0].clientY];
+//        const diff = [end[0] - start[0], end[1] - start[1]].map(c => -parseInt(c/50));
+//        if (Math.abs(diff[0]) >= 1) {
+//            figure.style.setProperty('--ry', parseInt(figure.style.getPropertyValue('--ry')) - diff[0]*30);
+//            start[0] = end[0];
+//        }
+//        if (Math.abs(diff[1]) >= 1) {
+//            figure.style.setProperty('--rx', parseInt(figure.style.getPropertyValue('--rx')) + diff[1]*30);
+//            start[1] = end[1];
+//        }
+//    };
+//});
+//document.onmouseup = document.ontouchend = () => start = null;
 </script>
