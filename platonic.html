@@ -6,50 +6,8 @@
 <link rel=stylesheet href='common.css'>
 <script src='platonic.js'></script>
 <style>
-menu {
-    margin-top:2em;margin-bottom:1em;
-}
-menu li {
-    margin:0 2em 3em 4.5em;
-    display:inline-block;
-}
-menu label,menu label::before {
-    color:grey;
-    border:.1rem solid silver;
-}
-menu label {
-    font-size:1em;
-    position:relative;
-    padding:.2em 0;
-    display:inline-block;width:8em;
-    border-bottom-right-radius:9em;border-top-right-radius:9em;
-    border-left:none;
-}
-menu label::before {
-    content:attr(for);
-    font-size:1.8em;
-    position:absolute;right:calc(100% - .3rem);top:50%;
-    transform:translate(0%,-50%);
-    width:3rem;height:3rem;line-height:3rem;
-    border-radius:9em;
-}
-menu label::after {
-    content:attr(data-width);
-    color:grey;
-    position:absolute;right:.2em;top:115%;
-}
-input[name=which]:checked+label {
-    background:var(--theme-bg);
-    border-color:var(--theme);
-    color:black;
-}
-input[name=which]:checked+label::before {
-    background:var(--theme);
-    border-color:var(--theme);
-    color:white;
-}
 form {
-    display:grid;grid-template:3em / 4rem 4rem 1fr;gap:.5em;
+    display:grid;grid-template:3em 3em 3em/ 4rem 4rem 1fr;gap:.5em;
 }
 form>* {
     align-self:center;
@@ -57,14 +15,14 @@ form>* {
 form label:not([value]) {
     color:grey;
 }
-#ring:checked~* figure::before,#ring:checked~* figure::after,#ring:checked~* figure {
+#ring:checked~* hedron-p::before,#ring:checked~* hedron-p::after,#ring:checked~* hedron-p {
     border:.1em solid var(--theme);border-radius:99em;
     content:'';
 }
-#spin:not(:checked)~* figure::before,#spin:not(:checked)~* figure::after,#spin:not(:checked)~* figure {
+#spin:not(:checked)~* hedron-p::before,#spin:not(:checked)~* hedron-p::after,#spin:not(:checked)~* hedron-p {
     animation-play-state:paused;
 }
-form label[value] {
+form label[for^=S] {
     display:block;
     width:100%;
     text-align:right;
@@ -76,44 +34,57 @@ input[type=range] {
 label[for=Stroke] {
     grid-area:1/3/2/4;
 }
-label[for=Diameter] {
+label[for=Size] {
     grid-area:2/3/3/4;
 }
-label[value]::before {
+label[for^=S]::before {
     content:attr(for);
 }
-label[value]::after {
+label[for^=S]::after {
     display:inline-block;width:2.2em;
     text-align:left;
-}
-label[value]::before,input[type=range],label[value]::after {
-    vertical-align:middle;
-}
-label[value]::after {
     content:attr(value);
 }
+label[for^=S]::before,input[type=range],label[for^=S]::after {
+    vertical-align:middle;
+}
 figure {
+    margin:2rem 1rem;
     display:inline-flex;
-    animation:spin 30s infinite linear;
     transform:rotateY(calc(1deg*var(--ry))) rotateZ(calc(1deg*var(--rx))) ;
-    transform-style:preserve-3d;
-    transition:.5s;
-    position:relative;
     line-height:0;
     vertical-align:middle;
+    border:.5em solid transparent;
+    position:relative;
+}
+figure[checked] {
+    border-color:var(--theme);
+}
+figure,hedron-p {
+    transition:.5s;
+}
+figure.merge,#merge:checked~* figure:not(.merge) {
+    display:none;
+}
+#merge:checked~* figure.merge {
+    display:inline-flex;
+}
+hedron-p {
+    animation:spin 30s infinite linear;
+    transform-style:preserve-3d;
 }
 @keyframes spin {
     to {transform:rotateX(360deg) rotateY(720deg) rotateZ(1080deg);}
 }
-figure::before,figure::after {
+hedron-p::before,hedron-p::after {
     content:'';
     position:absolute;left:0;top:0;
     width:100%;height:100%;
 }
-figure::before {
+hedron-p::before {
     animation:before-spin 10s linear infinite alternate;
 }
-figure::after {
+hedron-p::after {
     animation:after-spin 10s linear infinite alternate;
 }
 @keyframes before-spin {
@@ -122,39 +93,57 @@ figure::after {
 @keyframes after-spin {
     to {transform:rotate3d(var(--x),var(--y),var(--z),calc(-1deg*var(--a)));}
 }
-.toggle.single {
+.toggle.single,label[for=merge] {
     display:none;
 }
 #none:checked~* label[for=semi],
 #semi:checked~* label[for=full],
-#full:checked~* label[for=none] {
+#full:checked~* label[for=none],
+#full:checked~* label[for=merge],
+#cantellate:checked~* label[for=merge] {
     display:inline-flex;
+}
+
+article {
+    margin-top:3em;
+}
+nav {
+    display:flex;flex-wrap:wrap;justify-content:space-between
+}
+h2 {
+    font-size:1.5em;
+    margin:1em 0;
+}
+h3 {
+    font-size:1.2em;color:white;
+    margin:.5em 1em;padding:.2em 1em .4em 1em;
+    background:silver;border-radius:9em;
+    position:relative;
+    text-align:left;
+}
+figure h3 {
+    position:absolute;top:105%;left:50%;transform:translate(-50%,0);
+    line-height:initial;
+    margin:0;
+}
+figure h3,h3.got {
+    cursor:pointer;
+    background:var(--theme);
+}
+h3::before {
+    content:attr(data-no) '\A';
+    white-space:pre;
+    font-size:.8em;color:grey;
 }
 </style>
 
-<menu>
-    <li>
-        <input type=radio name=which id=20>
-        <label for=20>Icosahedron</label>
-    <li>
-        <input type=radio name=which id=12 checked>
-        <label for=12>Dodecahedron</label>
-    <li>
-        <input type=radio name=which id=8>
-        <label for=8>Octahedron</label>
-    <li>
-        <input type=radio name=which id=6>
-        <label for=6>Hexahedron</label>
-    <li>
-        <input type=radio name=which id=4>
-        <label for=4>Tetrahedron</label>
-</menu>
 <input type=checkbox id=ring>
 <input type=checkbox id=spin checked>
 <input type=checkbox id=merge>
 <input type=radio name=truncate id=none checked>
 <input type=radio name=truncate id=semi>
 <input type=radio name=truncate id=full>
+<input type=checkbox id=cantellate>
 
 <form>
     <label for=ring class=toggle data-icon=🪐 title='Circumsphere rings'></label>
@@ -163,85 +152,140 @@ figure::after {
     <label for=semi class='toggle single' data-icon=🔪></label>
     <label for=full class='toggle single' data-icon=🔪 style='justify-content:center'></label>
     <label class=toggle data-icon=🎨 title='Color' onclick="Q('hedron-p',solid=>solid.setAttribute('color',''))"></label>
-    <label for=merge class=toggle data-icon=↔️ title='Merge' style='display:none' onclick="merge(20,12);merge(8,6)"></label>
+    <label for=cantellate class=toggle data-icon=💠 title='Cantellate' onclick="cantellate()"></label>
+    <label for=merge class=toggle data-icon=↔️ title='Merge' onclick="merge(20,12);merge(8,6)"></label>
     <label for=Stroke><input type=range min=0 max=.5 step=.01 id=Stroke></label>
-    <label for=Diameter><input type=range min=5 max=20 step=.1 id=Diameter></label>
+    <label for=Size><input type=range min=0 max=5 step=.01 id=Size></label>
 </form>
 <section>
-    <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p></figure>
-    <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p></figure>
-    <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p></figure>
-    <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p></figure>
-    <figure><hedron-p color='140' stroke='0.02' diameter='10.2' face='4'></hedron-p></figure>
+    <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p><h3></h3></figure>
+    <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p><h3></h3></figure>
+    <figure class=merge></figure>
+    <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p><h3></h3></figure>
+    <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p><h3></h3></figure>
+    <figure class=merge></figure>
+    <figure><hedron-p color='140' stroke='0.02' diameter='10.2' face='4'></hedron-p><h3></h3></figure>
 </section>
+<article>
+    <h2>Platonic solids</h2>
+    <nav>
+        <h3 class=got data-no=P1>Icosahedron</h3>
+        <h3 class=got data-no=P2>Dodecahedron</h3>
+        <h3 class=got data-no=P3>Octahedron</h3>
+        <h3 class=got data-no=P4>Cube</h3>
+        <h3 class=got data-no=P5>Tetrahedron</h3>
+    </nav>
+    <h2>Archimedean solids</h2>
+    <nav>
+        <h3 data-no=A1>Truncated Icosahedron</h3>
+        <h3 data-no=A2>Truncated Dodecahedron</h3>
+        <h3 data-no=A3>Truncated Octahedron</h3>
+        <h3 data-no=A4>Truncated Cube</h3>
+        <h3 data-no=A5>Truncated Tetrahedron</h3>
+        <h3 data-no=A6>Cuboctahedron</h3>
+        <h3 data-no=A7>Icosidodecahedron</h3>
+        <h3 data-no=A8>Rhombicuboctahedron</h3>
+        <h3 data-no=A9>Rhombicosidodecahedron</h3>
+        <h3 data-no=A10>Truncated Cuboctahedron</h3>
+        <h3 data-no=A11>Truncated Icosidodecahedron</h3>
+        <h3 data-no=A12>Snub Cuboctahedron</h3>
+        <h3 data-no=A13>Snub Icosidodecahedron</h3>
+    </nav>
+</article>
 
 <script>
-Q('figure', figure => {
-    ['--x','--y','--z','--a'].forEach( p => figure.style.setProperty(p, Math.random()*360+360) );
-    ['--rx','--ry'].forEach( p => figure.style.setProperty(p, 0) );
-});
+['--x','--y','--z','--a'].forEach( p => Q('section').style.setProperty(p, Math.random()*360+360) );
+['--rx','--ry'].forEach( p => Q('section').style.setProperty(p, 0) );
 
-const setRange = id => {
+const setRange = hedron => {
     Q('input[type=range]', input => {
-        let value = Q(`hedron-p[face="${id}"]`).getAttribute(input.id);
+        let value = input.id == 'Stroke'? hedron.getAttribute(input.id) : hedron.style.fontSize.replace('em','') || 1;
         input.value = value;
         Q(`label[for=${input.id}]`).setAttribute('value', value);
     });
 };
-Q('input[name=which]', input => input.onchange = ev => setRange( Q('input[name=which]:checked').id) );
-setRange(12);
 
 const showWidth = id =>
     Q( id? `label[for='${id}']`:`menu label`, label => label.setAttribute('data-width',
         window.getComputedStyle( Q(`hedron-p[face='${label.getAttribute('for')}']`).shadow.querySelector('figure') ).width));
 showWidth();
 
+Q('section figure', figure => figure.onclick = ev => {
+    Q('section figure', other => other != figure? other.removeAttribute('checked') : null);
+    figure[figure.hasAttribute('checked')? 'removeAttribute':'setAttribute']('checked', '');
+    setRange(figure.querySelector('hedron-p'));
+});
+
 Q('input[type=range]', input => input.onchange = ev => {
-    const selected = Q('input[name=which]:checked').id;
-    Q(`hedron-p[face="${selected}"]`).setAttribute(input.id, ev.target.value);
+    if (input.id == 'Size')
+        Q(`figure[checked] hedron-p`).style.fontSize = ev.target.value + 'em';
+    else
+        Q(`figure[checked] hedron-p`).setAttribute(input.id, ev.target.value);
     ev.target.parentNode.setAttribute('value', ev.target.value);
-    showWidth(selected);
+    showWidth(Q(`figure[checked] hedron-p`).getAttribute('face'));
+});
+
+const names = ['Icosahedron','Dodecahedron','Octahedron','Cube','Tetrahedron'];
+Q('figure:not(.merge)', (figure, i) => {
+    figure.querySelector('h3').innerText = names[i]
+    figure.querySelector('h3').setAttribute('data-no', `P${i+1}`);
 });
 
 Q('input[name=truncate]', input => input.onchange = ev => truncate(ev.target.id));
-const truncate = level => {
-    if (level == 'full')
-        Q('label[for=merge]').style.display = 'inline-flex';
-    Q('hedron-p', hedron => {
+const truncate = level =>
+    Q('figure:not(.merge) hedron-p', (hedron, i) => {
         let points;
-        if (level == 'none') 
+        const h3 = hedron.nextElementSibling;
+        if (level == 'none') {
             points = Gon.points(hedron.side);
-        if (level == 'semi') 
+            h3.innerText = names[i];
+            h3.setAttribute('data-no', `P${i+1}`);
+        }
+        if (level == 'semi') {
             points = Gon.points(hedron.side*2, new Gon(hedron.side).truncatedR, Math.PI/hedron.side/-2);
+            h3.innerText = names.map(h => 'Truncated ' + h)[i];
+            h3.setAttribute('data-no', `A${i+1}`);
+        }
         if (level == 'full') {
             const r = new Gon(hedron.side, hedron.stroke).normal;
             const strokeAdjusted = r - (new Gon(hedron.side, hedron.stroke, r).strokedR - r);
             points = Gon.points(hedron.side, strokeAdjusted, -Math.PI/hedron.side, true);
             hedron.figure.style.setProperty('--edge', new Gon(hedron.side, hedron.stroke, strokeAdjusted).side);
+            h3.innerText = ['Icosidodecahedron','Icosidodecahedron','Cuboctahedron','Cuboctahedron','Octahedron'][i];
+            h3.setAttribute('data-no', ['A6','A6','A7','A7','P3'][i]);
         }
         const animate = hedron.shadow.querySelector('polygon animate');
         animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
         animate.setAttribute('to', points);
         animate.beginElement();
     });
-};
+
+const cantellate = () => {
+    merge(20,12);merge(8,6);
+    Q('hedron-p', hedron => hedron.shadow.querySelectorAll('figure').forEach(figure => figure.classList.toggle('extend')));
+}
 
 const merge = (transfer, receive) => {
-    const clone = Q(`hedron-p[face="${receive}"]`).parentNode.cloneNode(true);
-    clone.querySelector('hedron-p').removeAttribute('face');
-    Q(`hedron-p[face="${receive}"]`).parentNode.insertAdjacentElement('afterend', clone);
+    const slot = Q(`hedron-p[face="${receive}"]`).parentNode.nextElementSibling;
+    if (slot.innerHTML) return;
+    
+    const rectified = Q('#full:checked');
+
+    const clone = Q(`hedron-p[face="${receive}"]`).cloneNode(true);
+    clone.removeAttribute('face');
+    slot.appendChild(clone);
     
     let [trS, reS] = [Q(`hedron-p[face="${transfer}"]`), Q(`hedron-p[face="${receive}"]`)].map(hedron => hedron.shadowRoot);
-    let cloneS = clone.querySelector('hedron-p').shadowRoot;
+    let cloneS = clone.shadowRoot;
     cloneS.innerHTML += trS.querySelector('figure').outerHTML;
     
     const defs = cloneS.querySelector('defs');
     defs.innerHTML = '';
     [trS, reS].map(shadow => shadow.querySelector('polygon')).forEach(polygon => {
-        polygon.setAttribute('points', polygon.querySelector('animate').getAttribute('to')); 
+        rectified? polygon.setAttribute('points', polygon.querySelector('animate').getAttribute('to')) : null; 
         defs.appendChild(polygon.cloneNode(true));
     });
-    
+
     [trS, reS] = [trS, reS].map(shadow => shadow.querySelector('figure').style);
     const diameter = reS.getPropertyValue('--diameter').replace('em','');
     const scaled = reS.getPropertyValue('--edge') / trS.getPropertyValue('--edge');
@@ -251,6 +295,8 @@ const merge = (transfer, receive) => {
 const inputs = new Inputs('input[type=checkbox]', false);
 inputs.labels().setCSS('{border-color:silver; background:none; flex-direction:row-reverse;}');
 inputs.labels('::after').setCSS('{background:silver}');
+
+Q('h3', h3 => h3.onclick = ev => h3.classList.toggle('shown'));
 
 //let [start, end] = [null, null];
 //Q('figure', figure => {

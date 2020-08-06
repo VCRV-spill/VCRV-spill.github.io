@@ -9,16 +9,20 @@ customElements.define('hedron-p', class extends HTMLElement {
             text-align: left;
             width: calc(var(--circumR)*var(--diameter)); height :calc(var(--circumR)*var(--diameter));
         }
+        figure.extend {
+            --inR: var(--extendR) !important;
+        }
         div, svg {
             position: absolute;
             width: calc(var(--diameter)); height: calc(var(--diameter));
             overflow: visible;
             transform-style: preserve-3d;
-            transition: 1s;
+            transition: .5s;
         }
         use {
             stroke: hsl(var(--c),50%,50%); stroke-width: var(--stroke);
             fill: hsla(var(--c),80%,80%,0.85);
+            transition: .5s;
         }
         div:nth-of-type(odd) {
             transform: translateZ(calc(var(--inR)*var(--diameter)/2));
@@ -101,7 +105,7 @@ customElements.define('hedron-p', class extends HTMLElement {
     }
     
     static get observedAttributes() {
-        return ['stroke', 'diameter', 'color', 'truncate'];
+        return ['stroke', 'diameter', 'color'];
     }
     variables(...others) {
         this.gon = new Gon(this.side, this.stroke);
@@ -111,6 +115,8 @@ customElements.define('hedron-p', class extends HTMLElement {
             ['--slant', (this.face==12? Math.PI - this.constant.foldA : this.constant.slant) + 'rad'],
             ['--inR', this.constant.inR*this.gon.side],
             ['--circumR', this.constant.circumR*this.gon.side],
+            ['--extendR', this.gon.side/2/Math.cos(this.constant.foldA/2) + this.gon.normal*Math.tan(this.constant.foldA/2)],
+            ['--edge', this.gon.side],
             (this.face==20? ['--midSlant', this.constant.foldA - this.constant.slant + 'rad'] : []),
             ...others
         ].forEach( ([p, v]) => this.figure.style.setProperty(p, v));
