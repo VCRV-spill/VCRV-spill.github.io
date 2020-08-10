@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<title>Capillary</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<script src='common.js'></script>
+<link rel=stylesheet href='common.css'>
+<style>
+table {
+    margin:10em auto 6em auto;
+    --width:4em;width:var(--width);
+    --interval:0.4em;border-spacing:0 var(--interval);
+    perspective:150em;
+    perspective-origin:50% 150%;-webkit-perspective-origin:50% 150%;
+    user-select:none;-webkit-user-select:none;
+    cursor:move;
+}
+tbody {
+    --spin:calc(360deg/var(--count)*(1 - var(--checked))); 
+    transform:rotateY(var(--spin));transform-style:preserve-3d;
+    transition:1s;
+    --extend:calc(var(--count)*var(--width)/2/3.1415*1.1);
+}
+tr {
+    position:relative;
+    --height:calc(var(--width)/2);height:var(--height);
+}
+td {
+    width:var(--width);height:var(--height);
+    position:absolute;
+    --position:calc(360deg/var(--count)*(var(--index) - 1));
+    transform:rotateY(var(--position)) translateZ(var(--extend));
+    transform-style: preserve-3d;
+    line-height:var(--height);text-align:center;
+    padding:0;
+    --color:hsla(calc(360/var(--count)*var(--index)),70%,90%,0.85);
+    background:var(--color);
+    transition:0.5s;
+    z-index:-1;
+}
+td:empty {
+    --color:hsla(0,0%,90%,0.85);
+}
+td.front,td.side {
+    z-index:1;
+}
+table:not(.hexagon) tr:last-child td::after {
+    content:'';
+    position:absolute;top:calc(100% + var(--interval));left:0;
+    width:0;height:0;
+    border-style:solid;
+    border-color:var(--color) transparent transparent transparent;
+    border-width:var(--extend) calc(var(--width)/2) 0 calc(var(--width)/2);
+    transform-origin: 100% 0;transform:rotateX(-70deg);
+}
+table:not(.hexagon) tr:first-child td::before {
+    content:'';
+    position:absolute;bottom:calc(100% + var(--interval));left:0;
+    width:0;height:0;
+    border-style:solid;
+    border-color:transparent transparent var(--color) transparent;
+    border-width:0 calc(var(--width)/2) var(--extend) calc(var(--width)/2);
+    transform-origin: 0 100%;transform:rotateX(70deg);
+}
+table:not(.hexagon) tbody::before,table:not(.hexagon) tbody::after {
+    content:'';
+    width:0.5em;height:200%;
+    position:absolute;background:linear-gradient(to bottom,hsla(129,80%,80%,0.5),hsla(298,80%,80%,0.5));
+    top:50%;left:50%;transform:translate(-50%,-50%) rotateY(90deg);
+    border-radius:9em;
+    filter:blur(0.05em);
+}
+.hexagon tr {
+    --height:calc(var(--width)/2*1.732);height:var(--height);
+}
+.hexagon td {
+    --extend:calc(var(--count)*var(--width)/2/3.1415*0.85);
+    background:none;
+}
+.hexagon td:nth-child(even) {
+    transform:rotateY(var(--position)) translateY(calc(50% + var(--interval)/2)) translateZ(var(--extend));
+}
+.hexagon td::before,.hexagon td::after {
+    content:'';
+    position:absolute;left:0;z-index:-2;
+    width:var(--width);height:0;
+    border-style:solid;
+    transition:0.5s;
+    --b-width:calc(var(--width)/4);--b-height:calc(var(--height)/2);
+}
+.hexagon tr:last-child td {
+    color:transparent;
+}
+.hexagon tr:last-child td:nth-child(even) {
+    background:transparent !important;
+}
+.hexagon td::before {
+    border-color:transparent transparent var(--color) transparent;
+    border-width:0 var(--b-width) var(--b-height) var(--b-width);
+    top:0;
+}
+.hexagon td::after {
+    border-color:var(--color) transparent transparent transparent;
+    border-width:var(--b-height) var(--b-width) 0 var(--b-width);
+    bottom:0;
+}
+</style>
+<table class='hexagon'><tbody></tbody></table>
+<button onclick='Q("table").classList.toggle("hexagon")'>Toggle</button>
+<script>
+const data=[
+    [1,2,3,4,5,6,null,8,9,10,11,12,null,14,15,16,17,18,19,20,21,22,23,24,25,26],
+    [null,2,3,4,5,6,7,null,9,10,11,12,13,14,null,16,null,18,19,20,21,22,23,24,25,26],
+    [1,2,3,4,5,6,null,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26],
+    [1,null,3,4,5,6,7,8,9,10,11,null,13,14,15,16,null,18,19,20,21,22,23,24,25,26],
+    [1,2,3,4,null,6,7,null,9,10,11,12,13,14,15,null,17,18,19,20,21,22,23,24,25,26],
+];
+const table=document.getElementsByTagName('tbody')[0];
+let count;
+data.forEach(row => {
+    let tr=document.createElement('tr');
+    count=0;
+    row.forEach(cell => {
+        count++;
+        let td=document.createElement('td');
+        td.innerText=cell;
+        td.style.setProperty('--index',count);
+        tr.appendChild(td);
+    });
+    table.appendChild(tr);
+});
+table.appendChild(table.querySelector('tr:last-child').cloneNode(true));
+table.style.setProperty('--count',count);
+table.style.setProperty('--checked',1);
+
+const spin = n => {
+    table.querySelectorAll('td').forEach(td=>td.removeAttribute('class'));
+    let checked=parseInt(getComputedStyle(table).getPropertyValue('--checked'))+n;
+    table.style.setProperty('--checked',checked);
+    let quarter=parseInt((count-1)/4);
+    for (let i=-quarter;i<=quarter;i++)
+        table.querySelectorAll(`td:nth-child(${(checked+99*count-1+i)%count+1})`).forEach(td=>td.classList.add(Math.abs(i)==quarter? 'side':'front'));
+}
+spin(0);
+let press=null;
+table.ontouchstart = table.onmousedown = ev => press = event.clientX || event.touches[0].clientX;
+table.ontouchmove = table.onmousemove = ev => {
+    if (press == null) return;
+    current = event.clientX || event.touches[0].clientX;
+    let move = -parseInt((current-press)/50);
+    if (Math.abs(move) >= 1) {
+        spin(move);
+        press = current;
+    }
+};
+document.ontouchend = document.onmouseup = () => press = null;
+</script>

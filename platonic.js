@@ -17,7 +17,6 @@ customElements.define('hedron-p', class extends HTMLElement {
             width: calc(var(--diameter)); height: calc(var(--diameter));
             overflow: visible;
             transform-style: preserve-3d;
-            transition: .5s;
         }
         use {
             stroke: hsl(var(--c),50%,50%); stroke-width: var(--stroke);
@@ -126,8 +125,6 @@ customElements.define('hedron-p', class extends HTMLElement {
 	    return this.connectedCallback();
         if (attr == 'color')
             return this.color(this.shadow);
-        if (attr == 'truncate')
-            return this.truncate(after);
         this.variables();
     }
     get constant() {

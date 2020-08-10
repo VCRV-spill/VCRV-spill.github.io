@@ -5,10 +5,32 @@
 <link rel=stylesheet href='common.css'>
 <style>
 nav {
+  font-size:1.5em;
+}
+nav a {
+  display:block;
+  text-decoration:none;
+  width:17em;
+  padding:.2em .5em .2em 3em;margin:2em auto;
+  background:white;
   color:var(--theme);
+  text-align:left;
+  position:relative;
+  border-radius:9em;
+}
+nav a::before {
+  content:'';
+  position:absolute;left:-.3em;top:50%;transform:translate(0,-50%);
+  width:3em;height:3em;
+  border-radius:5em;border:.15em solid white;
+  background:var(--theme-bg);
 }
 </style>
 <nav>
-  <a href=platonic.html>1</a>
-  <a>2</a>
+  <a href='https://beyblade.epizy.com'>Beyblade Burst</a>
+  <a href='http://vcrv.dx.am'>VCRV Project</a>
+  <a href='platonic.html'>Platonic & Archimedean solids</a>
+  <a href='disk.html'>Colored disks</a>
+  <a href='capillary.html'>Drum & Tube</a>
+  <a href='cube.html'>Flying cubes</a>
 </nav>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<title>Geometric</title>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width, initial-scale=1.0">
+<script src='common.js'></script>
+<link rel=stylesheet href='common.css'>
+
+<figure>
+    <div>
+        <svg><polygon/></svg>
+    </div>
+    <div>
+        <svg><polygon/></svg>
+    </div>
+</figure>
+<style>
+figure,div,svg {
+    --diameter:20em;--stroke:0.02;
+    width:var(--diameter);height:var(--diameter);
+    transform-style:preserve-3d;
+}
+figure {
+    position:relative;
+    transform:rotateX(80deg);
+    animation:rotating 10s linear infinite;
+    text-align:left;
+}
+@keyframes rotating {
+    to {transform:rotateX(80deg) rotateZ(360deg);}
+}
+div {
+    position:absolute;
+}
+div:last-child {
+    transform:translateZ(calc(var(--extend)*var(--diameter)/-2)) rotate(var(--r)) rotateY(180deg);
+}
+svg {
+    overflow:visible;
+    position:absolute;
+    fill:rgb(255, 255, 136);
+    --stroke-percent:calc(100%*var(--stroke));
+    stroke-width:var(--stroke);stroke:black;
+}
+[class='3-gon'] {
+    width:calc(var(--diameter)*var(--ratio));
+    height:calc(var(--diameter)*var(--ratio));
+    left:calc((var(--l)/2 + .5)*100% - var(--diameter)*var(--ratio)/4);
+    top:calc((var(--t)/2 + .5)*100% - var(--diameter)*var(--ratio)/2);
+    transform-origin:25% 50%;
+    transform:rotate(var(--r)) rotateY(var(--slant));
+}
+</style>
+<script rel='figure'>
+class Gon {
+    constructor(n) {
+        this.n=n;
+        this.stroke=parseFloat(getComputedStyle(document.querySelector(document.currentScript.getAttribute('rel'))).getPropertyValue('--stroke'));
+    }
+    static points(n) {
+        let points='';
+        for (let i=0;i<=n-1;i++)
+            points+=Math.cos(2*Math.PI/n*i)+','+Math.sin(2*Math.PI/n*i)+' ';
+        document.querySelectorAll(`[class="${n}-gon"] polygon`).forEach(gon=>{
+            gon.setAttribute('points',points);
+            gon.setAttribute('style','--c:'+Math.random()*360); 
+        });
+    }
+    halfAngle()  {return (this.n-2)/this.n/2*Math.PI;}
+    get normal() {return Math.sin(this.halfAngle())+this.stroke/2;}
+    get side()   {return this.normal/Math.tan(this.halfAngle())*2;}
+    get strokedRadius() {return this.normal/Math.sin(this.halfAngle());}
+    get height() {return this.strokedRadius*(1+Math.cos(2*Math.PI/this.n/2));}
+}
+class Antiprism {
+    constructor(n) {
+        let svg=document.querySelector('svg');
+        document.querySelectorAll('svg:first-child').forEach(svg=>svg.setAttribute('class',n+'-gon'));
+        document.querySelectorAll('div').forEach(div=>{
+            for (let i=0;i<=n-1;i++) {
+                let tri=svg.cloneNode(true);
+                tri.setAttribute('class','3-gon');
+                tri.setAttribute('style','\
+                --l:'+(Math.cos(2*Math.PI/n*i)+Math.cos(2*Math.PI/n*(i+1)))/2+';\
+                --t:'+(Math.sin(2*Math.PI/n*i)+Math.sin(2*Math.PI/n*(i+1)))/2+';\
+                --r:'+(2*Math.PI/n*i+Math.PI/n)+'rad');
+                div.appendChild(tri);
+            }
+        });
+        document.querySelector('div:last-child').setAttribute('style','--r:'+(n%2==0? 2*Math.PI/n/2:0)+'rad');
+        Gon.points(n);Gon.points(3);
+    }
+}
+n=4;
+let anti=new Antiprism(n);
+document.querySelectorAll('svg').forEach(svg=>svg.setAttribute('viewBox','-1,-1 2,2'));
+
+let gon=new Gon(n);let tri=new Gon(3);
+document.querySelector('figure').setAttribute('style','--ratio:'+gon.side/tri.side+';\
+--slant:'+Math.acos((gon.strokedRadius-gon.normal)/(tri.height*gon.side/tri.side))+'rad;\
+--extend:'+Math.sqrt(Math.pow(tri.height*gon.side/tri.side,2)-Math.pow(gon.strokedRadius-gon.normal,2)));
+</script>

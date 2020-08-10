@@ -152,18 +152,18 @@ h3::before {
     <label for=semi class='toggle single' data-icon=🔪></label>
     <label for=full class='toggle single' data-icon=🔪 style='justify-content:center'></label>
     <label class=toggle data-icon=🎨 title='Color' onclick="Q('hedron-p',solid=>solid.setAttribute('color',''))"></label>
-    <label for=cantellate class=toggle data-icon=💠 title='Cantellate' onclick="cantellate()"></label>
-    <label for=merge class=toggle data-icon=↔️ title='Merge' onclick="merge(20,12);merge(8,6)"></label>
+    <label for=cantellate class=toggle data-icon=💠 title='Cantellate' onclick="Polyhedra.cantellate()"></label>
+    <label for=merge class=toggle data-icon=↔️ title='Merge' onclick="Polyhedra.merge(20,12);Polyhedra.merge(8,6)"></label>
     <label for=Stroke><input type=range min=0 max=.5 step=.01 id=Stroke></label>
     <label for=Size><input type=range min=0 max=5 step=.01 id=Size></label>
 </form>
 <section>
     <figure><hedron-p color='60' stroke='0.02' diameter='6.6' face='20'></hedron-p><h3></h3></figure>
     <figure><hedron-p color='80' stroke='0.02' diameter='6.6' face='12'></hedron-p><h3></h3></figure>
-    <figure class=merge></figure>
+    <figure class=merge><h3></h3></figure>
     <figure><hedron-p color='100' stroke='0.02' diameter='8.8' face='8'></hedron-p><h3></h3></figure>
     <figure><hedron-p color='120' stroke='0.02' diameter='8.9' face='6'></hedron-p><h3></h3></figure>
-    <figure class=merge></figure>
+    <figure class=merge><h3></h3></figure>
     <figure><hedron-p color='140' stroke='0.02' diameter='10.2' face='4'></hedron-p><h3></h3></figure>
 </section>
 <article>
@@ -225,78 +225,79 @@ Q('input[type=range]', input => input.onchange = ev => {
     showWidth(Q(`figure[checked] hedron-p`).getAttribute('face'));
 });
 
-const names = ['Icosahedron','Dodecahedron','Octahedron','Cube','Tetrahedron'];
-Q('figure:not(.merge)', (figure, i) => {
-    figure.querySelector('h3').innerText = names[i]
-    figure.querySelector('h3').setAttribute('data-no', `P${i+1}`);
-});
+const Polyhedra = {
+    setName: (h3, no) => {
+        h3.setAttribute('data-no', no);
+        h3.innerText = Q(`nav h3[data-no=${no}]`).innerText;
+    },
+    truncate: level => {
+        Q('figure:not(.merge) hedron-p', (hedron, i) => {
+            let points;
+            const h3 = hedron.nextElementSibling;
+            if (level == 'none') {
+                points = Gon.points(hedron.side);
+                Polyhedra.setName(h3, `P${i+1}`);
+            }
+            if (level == 'semi') {
+                points = Gon.points(hedron.side*2, new Gon(hedron.side).truncatedR, Math.PI/hedron.side/-2);
+                Polyhedra.setName(h3, `A${i+1}`);
+            }
+            if (level == 'full') {
+                const r = new Gon(hedron.side, hedron.stroke).normal;
+                const strokeAdjusted = r - (new Gon(hedron.side, hedron.stroke, r).strokedR - r);
+                points = Gon.points(hedron.side, strokeAdjusted, -Math.PI/hedron.side, true);
+                hedron.figure.style.setProperty('--edge', new Gon(hedron.side, hedron.stroke, strokeAdjusted).side);
+                Polyhedra.setName(h3, ['A7','A7','A6','A6','P3'][i]);
+            }
+            const animate = hedron.shadow.querySelector(`[id='${hedron.side}'] animate`);
+            animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
+            animate.setAttribute('to', points);
+            animate.parentNode.setAttribute('points', points);
+            animate.beginElement();
+        });
+    },
+    cantellate: () => {
+        Polyhedra.merge(20,12);Polyhedra.merge(8,6);
+        Q('hedron-p', hedron => hedron.shadow.querySelectorAll('figure').forEach(figure => figure.classList.toggle('extend')));
+        Q('figure.merge h3', (h3, i) => Polyhedra.setName(h3, ['A9','A8'][i]) );
+    },
+    snubify: () => {
+        
+    },
+    merge: (transfer, receive) => {
+        const slot = Q(`hedron-p[face="${receive}"]`).parentNode.nextElementSibling;
+        if (slot.querySelector('hedron-p')) return;
 
-Q('input[name=truncate]', input => input.onchange = ev => truncate(ev.target.id));
-const truncate = level =>
-    Q('figure:not(.merge) hedron-p', (hedron, i) => {
-        let points;
-        const h3 = hedron.nextElementSibling;
-        if (level == 'none') {
-            points = Gon.points(hedron.side);
-            h3.innerText = names[i];
-            h3.setAttribute('data-no', `P${i+1}`);
-        }
-        if (level == 'semi') {
-            points = Gon.points(hedron.side*2, new Gon(hedron.side).truncatedR, Math.PI/hedron.side/-2);
-            h3.innerText = names.map(h => 'Truncated ' + h)[i];
-            h3.setAttribute('data-no', `A${i+1}`);
-        }
-        if (level == 'full') {
-            const r = new Gon(hedron.side, hedron.stroke).normal;
-            const strokeAdjusted = r - (new Gon(hedron.side, hedron.stroke, r).strokedR - r);
-            points = Gon.points(hedron.side, strokeAdjusted, -Math.PI/hedron.side, true);
-            hedron.figure.style.setProperty('--edge', new Gon(hedron.side, hedron.stroke, strokeAdjusted).side);
-            h3.innerText = ['Icosidodecahedron','Icosidodecahedron','Cuboctahedron','Cuboctahedron','Octahedron'][i];
-            h3.setAttribute('data-no', ['A6','A6','A7','A7','P3'][i]);
-        }
-        const animate = hedron.shadow.querySelector('polygon animate');
-        animate.setAttribute('from', animate.getAttribute('to') || animate.parentNode.getAttribute('points'));
-        animate.setAttribute('to', points);
-        animate.beginElement();
-    });
-
-const cantellate = () => {
-    merge(20,12);merge(8,6);
-    Q('hedron-p', hedron => hedron.shadow.querySelectorAll('figure').forEach(figure => figure.classList.toggle('extend')));
+        const clone = Q(`hedron-p[face="${receive}"]`).cloneNode(true);
+        clone.removeAttribute('face');
+        slot.insertAdjacentElement('afterbegin', clone);
+        
+        let [trS, reS] = [Q(`hedron-p[face="${transfer}"]`), Q(`hedron-p[face="${receive}"]`)].map(hedron => hedron.shadowRoot);
+        let cloneS = clone.shadowRoot;
+        cloneS.innerHTML += trS.querySelector('figure').outerHTML;
+        
+        const defs = cloneS.querySelector('defs');
+        defs.innerHTML = '';
+        [trS, reS].map(shadow => shadow.querySelector('polygon')).forEach(polygon => defs.appendChild(polygon.cloneNode(true)) );
+    
+        [trS, reS] = [trS, reS].map(shadow => shadow.querySelector('figure').style);
+        const diameter = reS.getPropertyValue('--diameter').replace('em','');
+        const scaled = reS.getPropertyValue('--edge') / trS.getPropertyValue('--edge');
+        cloneS.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled + 'em');
+        
+        if (Q('#full:checked'))
+            Q('figure.merge h3', (h3, i) => Polyhedra.setName(h3, ['A7','A6'][i]) );
+    }
 }
 
-const merge = (transfer, receive) => {
-    const slot = Q(`hedron-p[face="${receive}"]`).parentNode.nextElementSibling;
-    if (slot.innerHTML) return;
-    
-    const rectified = Q('#full:checked');
-
-    const clone = Q(`hedron-p[face="${receive}"]`).cloneNode(true);
-    clone.removeAttribute('face');
-    slot.appendChild(clone);
-    
-    let [trS, reS] = [Q(`hedron-p[face="${transfer}"]`), Q(`hedron-p[face="${receive}"]`)].map(hedron => hedron.shadowRoot);
-    let cloneS = clone.shadowRoot;
-    cloneS.innerHTML += trS.querySelector('figure').outerHTML;
-    
-    const defs = cloneS.querySelector('defs');
-    defs.innerHTML = '';
-    [trS, reS].map(shadow => shadow.querySelector('polygon')).forEach(polygon => {
-        rectified? polygon.setAttribute('points', polygon.querySelector('animate').getAttribute('to')) : null; 
-        defs.appendChild(polygon.cloneNode(true));
-    });
-
-    [trS, reS] = [trS, reS].map(shadow => shadow.querySelector('figure').style);
-    const diameter = reS.getPropertyValue('--diameter').replace('em','');
-    const scaled = reS.getPropertyValue('--edge') / trS.getPropertyValue('--edge');
-    cloneS.querySelector('figure+figure').style.setProperty('--diameter', diameter * scaled + 'em');
-};
+Q('figure:not(.merge) h3', (h3, i) => Polyhedra.setName(h3, `P${i+1}`) );
+Q('input[name=truncate]', input => input.onchange = ev => Polyhedra.truncate(ev.target.id));
 
 const inputs = new Inputs('input[type=checkbox]', false);
 inputs.labels().setCSS('{border-color:silver; background:none; flex-direction:row-reverse;}');
 inputs.labels('::after').setCSS('{background:silver}');
 
-Q('h3', h3 => h3.onclick = ev => h3.classList.toggle('shown'));
+Q('nav h3', h3 => h3.onclick = ev => h3.classList.toggle('shown'));
 
 //let [start, end] = [null, null];
 //Q('figure', figure => {
