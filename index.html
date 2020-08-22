@@ -17,6 +17,11 @@ nav a {
   text-align:left;
   position:relative;
   border-radius:9em;
+  transition:background .5s,border-color .5s,color .5s;
+}
+nav a:hover {
+  background:var(--theme);
+  color:white;
 }
 nav a::before {
   content:'';
@@ -24,11 +29,16 @@ nav a::before {
   width:3em;height:3em;
   border-radius:5em;border:.15em solid white;
   background:var(--theme-bg);
+  transition:background .5s,border-color .5s,color .5s;
+}
+nav a:hover::before {
+  border-color:var(--theme);
+  background:white;
 }
 </style>
 <nav>
   <a href='https://beyblade.epizy.com'>Beyblade Burst</a>
-  <a href='http://vcrv.dx.am'>VCRV Project</a>
+  <a href='https://vocarevo.rf.gd'>VCRV Project</a>
   <a href='platonic.html'>Platonic & Archimedean solids</a>
   <a href='disk.html'>Colored disks</a>
   <a href='capillary.html'>Drum & Tube</a>
